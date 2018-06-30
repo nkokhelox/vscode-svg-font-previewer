@@ -11,14 +11,13 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.pisdPreviewer"
+        "onCommand:extension.svgFontPreview"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                //cmd+shift+v
-                "command": "extension.pisdPreviewer",
+                "command": "extension.svgFontPreview",
                 "title": "PISD Previewer"
             }
         ]
@@ -34,13 +33,12 @@
         "typescript": "^2.6.1",
         "vscode": "^1.1.6",
         "tslint": "^5.8.0",
-        "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+        "@types/xmldom": "^0.1.29",
+        "@types/mocha": "^2.2.42",
+        "@types/node": "^7.0.43"
     },
     "dependencies": {
-        "@types/xmldom": "^0.1.29",
         "lodash": "^4.17.10",
-        "xmldoc": "^1.1.0",
         "xmldom": "^0.1.27"
     }
 }
