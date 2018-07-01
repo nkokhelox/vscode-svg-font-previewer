@@ -19,14 +19,14 @@ export function activate(context: vscode.ExtensionContext) {
     }
     
     function getFileName(document: vscode.TextDocument): string {
-        return document.fileName.split('/').pop() || 'svgFontPreview';//).split('\\').slice(-1)[0] || ''): '';
+        return document.fileName.split('/').pop() || 'svgFontPreview';
     }
 
     const { isSvgFile, document } = svgFileMeta();
 
     if (isSvgFile && document) {
         const preveiwProvider = new TextDocumentContentProvider(document);
-        const previewUri = vscode.Uri.parse(`svgFontPreview://pisd?file${getFileName(document)}`);
+        const previewUri = vscode.Uri.parse(`svgFontPreview://svgFile?${getFileName(document)}`);
         const preveiwRegistration = vscode.workspace.registerTextDocumentContentProvider('svgFontPreview', preveiwProvider);
         const disposable = vscode.commands.registerTextEditorCommand('extension.svgFontPreview', () => {
             const editorView = vscode.window.activeTextEditor;

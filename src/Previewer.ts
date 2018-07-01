@@ -64,6 +64,8 @@ export default class TextDocumentContentProvider implements vscode.TextDocumentC
         htmlBody.appendChild(fontDescriptionElement);
 
         const glyphList = xmlFontContent.getElementsByTagName('glyph');
+        const fontIcons = [];
+
         for (let fontIconIndex = 0; fontIconIndex < glyphList.length; fontIconIndex++) {
           const glyphIcon = glyphList[fontIconIndex];
           if (glyphIcon) {
@@ -105,14 +107,18 @@ export default class TextDocumentContentProvider implements vscode.TextDocumentC
 
               const svgContent = htmlDocument.createElement(`dl`);
               svgContent.setAttribute('style', 'margin: 0 0 .5em .5em; float: left; outline: currentcolor dotted 1px; min-width: 10em; min-height: 10em; padding: .5em;');
+              svgContent.setAttribute('id', iconName);
               svgContent.appendChild(iconSvgChar);
               svgContent.appendChild(iconSvgPath);
               svgContent.appendChild(iconSvgName);
 
-              htmlBody.appendChild(svgContent);
+              fontIcons.push(svgContent);
             }
           }
         }
+
+        // make sort decision configurable.
+        fontIcons.sort((a, b) => a.getAttribute('id') < b.getAttribute('id') ? -1 : 1).forEach(node => htmlBody.appendChild(node));
       }
     }
 
