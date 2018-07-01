@@ -1,7 +1,7 @@
 {
     "name": "svg-font-viewer",
     "displayName": "svg-font-viewer",
-    "description": "preview your svg font. Open command pelete `PISD Previewer` or `cmd+shift+v`",
+    "description": "Preview your svg font. Open command pelete `SVG Font Preview` or `cmd+shift+v`",
     "version": "0.0.1",
     "publisher": "nkokhelox",
     "engines": {
@@ -15,10 +15,18 @@
     ],
     "main": "./out/extension",
     "contributes": {
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "extension.svgFontPreview",
+                    "when": "resourceLangId == xml"
+                }
+            ]
+        },
         "commands": [
             {
                 "command": "extension.svgFontPreview",
-                "title": "PISD Previewer"
+                "title": "SVG Font Preview"
             }
         ]
     },
