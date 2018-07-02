@@ -2,7 +2,14 @@
 import * as vscode from 'vscode';
 import * as xml from 'xmldom';
 
+const TagsSortBy = {
+    HEXCHAR: 'hexChar',
+    NAME: 'name',
+    OFF: 'off'
+};
+
 const webviewPanels = new Map<string, vscode.WebviewPanel>();
+let sortOrder: string = TagsSortBy.NAME;
 
 export function activate(context: vscode.ExtensionContext) {
     const openPreviewCommand = vscode.commands.registerTextEditorCommand(
@@ -11,6 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
             const editorView = vscode.window.activeTextEditor;
 
             if (editorView) {
+                sortOrder = sortingConfig(context);
                 const htmlContentString = getPreviewContent(editorView);
                 const fileName = getFileName(editorView);
                 if (htmlContentString) {
@@ -29,26 +37,11 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
-
-    // context.subscriptions.push(
-    //     vscode.window.onDidChangeActiveTextEditor((textEditor) => {
-    //         const { isSvgFile, document } = svgFileMeta(textEditor);
-    // refresh the view.
-    //     }),
-    // );
-
-    /*
-      context.subscriptions.push(vscode.workspace.onDidOpenTextDocument((textDocument)=> {
-          // console.log('onDidOpenTextDocument', textDocument.uri)
-      }))
-      */
-
     context.subscriptions.push(openPreviewCommand);
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {
-    console.log('----------------------------');
 }
 
 // // on save call this and tell the webview to reload.
@@ -184,13 +177,16 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
                         svgContent.appendChild(iconSvgPath);
                         svgContent.appendChild(iconSvgName);
 
-                        fontIcons.push(svgContent);
+                        fontIcons.push(new SortableTag(iconName, hexChar, svgContent));
                     }
                 }
             }
 
-            // make sort decision configurable.
-            fontIcons.sort((a, b) => a.getAttribute('id') < b.getAttribute('id') ? -1 : 1).forEach(node => htmlBody.appendChild(node));
+            (
+                sortOrder !== TagsSortBy.OFF ?
+                    fontIcons.sort((a, b) => a.get(sortOrder) < b.get(sortOrder) ? -1 : 1) :
+                    fontIcons
+            ).forEach(x => htmlBody.appendChild(x.element));
         }
     }
 
@@ -206,4 +202,27 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
     }
 
     return htmlContentString;
+}
+
+
+// make sort decision configurable.
+function sortingConfig(context: vscode.ExtensionContext): string {
+    return TagsSortBy.NAME; // off, name, char
+}
+
+class SortableTag {
+    private fields = new Map<string, string>();
+    readonly element: any;
+
+    constructor(name: string, hexChar: string, element: any) {
+        this.fields.set(TagsSortBy.HEXCHAR, hexChar);
+        this.fields.set(TagsSortBy.NAME, name);
+        this.element = element;
+    }
+
+    get(key: string | undefined): string {
+        return (key ?
+            this.fields.get(key) || this.fields.get(TagsSortBy.NAME) :
+            this.fields.get(TagsSortBy.NAME)) || '';
+    }
 }
