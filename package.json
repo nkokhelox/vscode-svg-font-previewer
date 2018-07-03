@@ -8,7 +8,7 @@
     "engines": {
         "vscode": "^1.24.0"
     },
-    "license": "<TBA>",
+    "license": "MIT",
     "keywords": [
         "svg",
         "font",
