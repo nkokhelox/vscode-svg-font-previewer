@@ -4,6 +4,7 @@
     "description": "Preview your svg font. Open command pelete `SVG Font Preview` or `cmd+shift+v`",
     "version": "0.0.1",
     "publisher": "nkokhelox",
+    "preview": true,
     "engines": {
         "vscode": "^1.24.0"
     },
@@ -21,11 +22,25 @@
     ],
     "main": "./out/extension",
     "contributes": {
+        "languages": [
+            {
+                "id": "svg",
+                "extensions": [
+                    ".svg"
+                ]
+            }
+        ],
         "menus": {
+            "commandPalette": [
+                {
+                    "command": "extension.svgFontPreview",
+                    "when": "resourceLangId == svg"
+                }
+            ],
             "editor/title": [
                 {
                     "command": "extension.svgFontPreview",
-                    "when": "resourceLangId == xml"
+                    "when": "resourceLangId == svg"
                 }
             ]
         },
@@ -38,7 +53,7 @@
         "keybindings": [
             {
                 "command": "extension.svgFontPreview",
-                "when": "editorLangId == xml",
+                "when": "editorLangId == svg",
                 "key": "ctrl+shift+v",
                 "mac": "cmd+shift+v"
             }

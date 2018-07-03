@@ -11,52 +11,41 @@ const TagsSortBy = {
 const webviewPanels = new Map<string, vscode.WebviewPanel>();
 let sortOrder: string = TagsSortBy.NAME;
 
-export function activate(context: vscode.ExtensionContext) {
-    const openPreviewCommand = vscode.commands.registerTextEditorCommand(
-        'extension.svgFontPreview',
-        () => {
-            const editorView = vscode.window.activeTextEditor;
-
-            if (editorView) {
-                sortOrder = sortingConfig(context);
-                const htmlContentString = getPreviewContent(editorView);
-                const fileName = getFileName(editorView);
-                if (htmlContentString) {
-                    const panel = getWebViewPanel(fileName, htmlContentString);
-                    if (panel) {
-                        panel.onDidDispose(() => webviewPanels.delete(fileName), null, context.subscriptions);
-                        panel.reveal(panel.viewColumn);
-                    }
-                }
-                else {
-                    vscode.window.showInformationMessage(`'${fileName}' is not the SVG file`);
-                }
-            } else {
-                vscode.window.showInformationMessage(`There's no open document`);
-            }
-        }
-    );
-
-    context.subscriptions.push(openPreviewCommand);
-}
-
-// this method is called when your extension is deactivated
 export function deactivate() {
 }
 
-// // on save call this and tell the webview to reload.
-// function updatePreviewContent(fileName: string, panelOptions: object, htmlContentString: string): void {
-//     const panel = getWebViewPanel(fileName, panelOptions, htmlContentString, false);
-//     if (panel) {
-//         panel.webview.html = htmlContentString;
-//         // reload the panel
-//     }
-// }
+export function activate(context: vscode.ExtensionContext) {
+    const textEditorCommand = vscode.commands.registerTextEditorCommand('extension.svgFontPreview',() => activatePreviewPanel(context));
+    context.subscriptions.push(textEditorCommand);
+}
+
+function activatePreviewPanel(context: vscode.ExtensionContext) {
+    const editorView = vscode.window.activeTextEditor;
+
+    if (editorView) {
+        sortOrder = sortingConfig(context);
+        const htmlContentString = previewSvg(editorView.document);
+        const fileName = getFileName(editorView.document);
+        if (htmlContentString) {
+            const panel = getWebViewPanel(fileName, htmlContentString);
+            if (panel) {
+                panel.onDidDispose(() => webviewPanels.delete(fileName), null, context.subscriptions);
+                panel.reveal(panel.viewColumn);
+            }
+        }
+        else {
+            vscode.window.showInformationMessage(`'${fileName}' is not the SVG file`);
+        }
+    } else {
+        vscode.window.showInformationMessage(`There's no open document`);
+    }
+}
 
 function getWebViewPanel(fileName: string, htmlContentString: string, makeNewPanel: boolean = true, panelOptions: object = {}): vscode.WebviewPanel | undefined {
     const maybeExistingPanel = webviewPanels.get(fileName);
 
     if (maybeExistingPanel) {
+        maybeExistingPanel.webview.html = htmlContentString;
         return maybeExistingPanel;
     }
 
@@ -72,15 +61,8 @@ function getWebViewPanel(fileName: string, htmlContentString: string, makeNewPan
     }
 }
 
-function getFileName(editor: vscode.TextEditor): string {
-    if (editor) {
-        return editor.document.fileName.split('/').pop() || 'svgFontPreview';
-    }
-    return 'SVG Font Preview';
-}
-
-function getPreviewContent(editor: vscode.TextEditor): string | undefined {
-    return previewSvg(editor.document);
+function getFileName(document: vscode.TextDocument): string {
+    return document.fileName.split('/').pop() || 'SVG Font Preview';
 }
 
 function previewSvg(document: vscode.TextDocument): string | undefined {
@@ -96,7 +78,7 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
 
     let renderContent = false;
 
-    if ((!fontNodes || fontNodes.length <= 0) && document.languageId.toLowerCase() === 'xml' && document.fileName.toLowerCase().endsWith('.svg')) { // Normal svg image
+    if ((!fontNodes || fontNodes.length <= 0) && document.languageId.toLowerCase() === 'svg') { // Normal svg image
         const iconContainer = htmlDocument.createElement('a');
         iconContainer.setAttribute('style', 'text-decoration:none; color:inherit; display:block; margin: 0 auto; min-width:6em; min-height:6em; padding:.5em;');
         iconContainer.setAttribute('href', '#');
