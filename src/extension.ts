@@ -52,7 +52,7 @@ function getWebViewPanel(fileName: string, htmlContentString: string, makeNewPan
     if (makeNewPanel) {
         const editorView = vscode.window.activeTextEditor;
         const toggleViewColumn = editorView && editorView.viewColumn ? editorView.viewColumn % 3 + 1 : vscode.ViewColumn.Two;
-        const newPanel = vscode.window.createWebviewPanel('svgFontPreview', fileName, toggleViewColumn, panelOptions);
+        const newPanel = vscode.window.createWebviewPanel('svgFontPreview', fileName, toggleViewColumn, {});
 
         newPanel.webview.html = htmlContentString;
         webviewPanels.set(fileName, newPanel);
@@ -129,12 +129,14 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
                         pathElement.setAttribute('d', svgPathData);
 
                         const svgElement = htmlDocument.createElement(`svg`);
-                        svgElement.setAttribute('viewBox', `0 0 ${horizontalUnits * 1} ${unitsPerEm * 1}`);
-                        svgElement.setAttribute('style', 'height:2em');
+                        svgElement.setAttribute('viewBox', `0 0 ${(horizontalUnits * 1) * 1.2} ${(unitsPerEm * 1)*1.2}`);
+                        svgElement.setAttribute('style', 'height:4em');
                         svgElement.appendChild(pathElement);
 
                         const iconContainer = htmlDocument.createElement('a');
-                        iconContainer.setAttribute('style', `text-decoration:none; color:inherit; display:block; margin-bottom:90px;margin: auto; width:3em; height:4em; padding:.5em;`);
+                        iconContainer.setAttribute('style', `text-decoration:none; color:inherit; display:block; margin: auto auto 30px auto; width:3em; height:4em; padding:.5em;`);
+                        iconContainer.setAttribute('href', '#${iconName}');
+                        iconContainer.setAttribute('name', iconName);
                         iconContainer.appendChild(svgElement);
 
                         const iconSvgPath = htmlDocument.createElement('dt');
@@ -189,7 +191,7 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
 
 // make sort decision configurable.
 function sortingConfig(context: vscode.ExtensionContext): string {
-    return TagsSortBy.NAME; // off, name, char
+    return TagsSortBy.HEXCHAR; //NAME; // off, name, char
 }
 
 class SortableTag {

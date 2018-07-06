@@ -1,16 +1,25 @@
 {
+    "preview": true,
+    "version": "0.0.1",
+    "icon": "res/icon.png",
+    "publisher": "nkokhelox",
     "name": "svg-font-viewer",
     "displayName": "svg-font-viewer",
+    "homepage": "https://github.com/nkokhelox/svg-font-viewer",
     "description": "Preview your svg font. Open command pelete `SVG Font Preview` or `cmd+shift+v`",
-    "version": "0.0.1",
-    "publisher": "nkokhelox",
     "repository": {
         "type": "git",
         "url": "https://github.com/nkokhelox/svg-font-viewer"
     },
-    "preview": true,
+    "bugs": {
+		"url": "https://github.com/nkokhelox/svg-font-viewer/issues"
+	},
+    "galleryBanner": {
+        "color": "#AAAAAA",
+        "theme": "light"
+    },
     "engines": {
-        "vscode": "^1.24.0"
+        "vscode": "^1.23.0"
     },
     "license": "MIT",
     "keywords": [
