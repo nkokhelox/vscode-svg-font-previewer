@@ -45,8 +45,6 @@ let autoOpenPreview: boolean = true;
 
 const webviewPanels = new Map<string, vscode.WebviewPanel>();
 
-loadConfig();
-
 export function deactivate() {
 }
 
@@ -57,6 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
             () => {
                 const editorView = vscode.window.activeTextEditor;
                 if (editorView && isSvg(editorView.document)) {
+                    loadConfig();
                     activatePreviewPanel(context, editorView.document, true);
                 }
             }
@@ -65,11 +64,8 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidChangeConfiguration(
         (event: vscode.ConfigurationChangeEvent) => {
-            if (event.affectsConfiguration('svg-font-previewer')) {
-                loadConfig();
-                if (webviewPanels.size > 0) {
-                    vscode.window.showInformationMessage(`Configuration updated, reopen your font ${webviewPanels.size === 1 ? 'preview' : 'previews'}`);
-                }
+            if (event.affectsConfiguration('svg-font-previewer') && webviewPanels.size > 0) {
+                vscode.window.showInformationMessage(`Configuration updated, reopen your font ${webviewPanels.size === 1 ? 'preview' : 'previews'}`);
             }
         }
     );
