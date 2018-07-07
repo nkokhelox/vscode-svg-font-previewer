@@ -102,7 +102,7 @@ function activatePreviewPanel(context: vscode.ExtensionContext, document: vscode
             }
         }
 
-        panel.reveal(panel.viewColumn, true);
+        panel.reveal(panel.viewColumn);
     }
 }
 
@@ -110,7 +110,7 @@ function getWebViewPanel(
     fileName: string,
     context: vscode.ExtensionContext,
     makeNewPanel: boolean = true,
-    panelOptions: object = {}
+    panelOptions: object = {preserveFocus: true}
 ): vscode.WebviewPanel | undefined {
     const maybeExistingPanel = webviewPanels.get(fileName);
 
@@ -121,7 +121,7 @@ function getWebViewPanel(
     if (makeNewPanel) {
         const editorView = vscode.window.activeTextEditor;
         const toggleViewColumn = editorView && editorView.viewColumn ? editorView.viewColumn % 3 + 1 : vscode.ViewColumn.Two;
-        const newPanel = vscode.window.createWebviewPanel('svgFontPreview', fileName, { preserveFocus: true, viewColumn: toggleViewColumn }, panelOptions);
+        const newPanel = vscode.window.createWebviewPanel('svgFontPreview', fileName, toggleViewColumn, panelOptions);
 
         newPanel.onDidDispose(() => webviewPanels.delete(fileName), null, context.subscriptions);
         webviewPanels.set(fileName, newPanel);
@@ -252,7 +252,7 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
                 }
 
                 const sortOrderFactor = sortByOrder === TagSortOrder.DESC ? -1 : 1;
-                fontIcons = sortByField === TagSortBy.NONE ? fontIcons : fontIcons.sort((a, b) => a.get(sortByField) < b.get(sortByField) ? -1 * sortOrderFactor : 1 * sortOrderFactor)
+                fontIcons = sortByField === TagSortBy.NONE ? fontIcons : fontIcons.sort((a, b) => a.get(sortByField) < b.get(sortByField) ? -1 * sortOrderFactor : 1 * sortOrderFactor);
                 fontIcons.forEach(x => htmlBody.appendChild(x.element));
             }
         }
