@@ -65,9 +65,11 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidChangeConfiguration(
         (event: vscode.ConfigurationChangeEvent) => {
-            if (event.affectsConfiguration('svg-font-previewer') && webviewPanels.size > 0) {
+            if (event.affectsConfiguration('svg-font-previewer')) {
                 loadConfig();
-                vscode.window.showInformationMessage(`Configuration updated, reopen your font ${webviewPanels.size === 1 ? 'preview' : 'previews'}`);
+                if (webviewPanels.size > 0) {
+                    vscode.window.showInformationMessage(`Configuration updated, reopen your font ${webviewPanels.size === 1 ? 'preview' : 'previews'}`);
+                }
             }
         }
     );
@@ -110,7 +112,7 @@ function getWebViewPanel(
     fileName: string,
     context: vscode.ExtensionContext,
     makeNewPanel: boolean = true,
-    panelOptions: object = {preserveFocus: true}
+    panelOptions: object = { preserveFocus: true }
 ): vscode.WebviewPanel | undefined {
     const maybeExistingPanel = webviewPanels.get(fileName);
 
