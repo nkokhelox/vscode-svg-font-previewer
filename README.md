@@ -1,4 +1,7 @@
 # README
+
+[![Build Status](https://travis-ci.org/nkokhelox/svg-font-viewer.svg?branch=master)](https://travis-ci.org/nkokhelox/svg-font-viewer)
+
 SVG Font Previewer is built for viewing SVG files, especially SVG font files.
 
 ## Features
