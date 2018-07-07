@@ -2,20 +2,38 @@
 import * as vscode from 'vscode';
 import * as xml from 'xmldom';
 
-const TagsSortBy = {
-    HEXCHAR: 'hexChar',
+const TagSortBy = {
+    UNICODE: 'unicode',
     NAME: 'name',
-    OFF: 'off'
+    NONE: 'none',
+    map: new Map([
+        ['none', 'none'],
+        ['name', 'name'],
+        ['unicode', 'unicode']
+    ])
 };
 
+const TagSortOrder = {
+    ASC: 'asc',
+    DESC: 'desc',
+    map: new Map([
+        ['asc', 'asc'],
+        ['desc', 'desc']
+    ])
+};
+
+let sortByField: string = TagSortBy.NONE;
+let sortByOrder: string = TagSortOrder.ASC;
+
 const webviewPanels = new Map<string, vscode.WebviewPanel>();
-let sortOrder: string = TagsSortBy.NAME;
+
+initConfig();
 
 export function deactivate() {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    const textEditorCommand = vscode.commands.registerTextEditorCommand('extension.svgFontPreview',() => activatePreviewPanel(context));
+    const textEditorCommand = vscode.commands.registerTextEditorCommand('extension.svgFontPreview', () => activatePreviewPanel(context));
     context.subscriptions.push(textEditorCommand);
 }
 
@@ -23,7 +41,6 @@ function activatePreviewPanel(context: vscode.ExtensionContext) {
     const editorView = vscode.window.activeTextEditor;
 
     if (editorView) {
-        sortOrder = sortingConfig(context);
         const htmlContentString = previewSvg(editorView.document);
         const fileName = getFileName(editorView.document);
         if (htmlContentString) {
@@ -109,7 +126,7 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
             htmlBody.appendChild(fontDescriptionElement);
 
             const glyphList = xmlFontContent.getElementsByTagName('glyph');
-            const fontIcons = [];
+            let fontIcons = [];
 
             for (let fontIconIndex = 0; fontIconIndex < glyphList.length; fontIconIndex++) {
                 renderContent = true;
@@ -129,7 +146,7 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
                         pathElement.setAttribute('d', svgPathData);
 
                         const svgElement = htmlDocument.createElement(`svg`);
-                        svgElement.setAttribute('viewBox', `0 0 ${(horizontalUnits * 1) * 1.2} ${(unitsPerEm * 1)*1.2}`);
+                        svgElement.setAttribute('viewBox', `0 0 ${(horizontalUnits * 1) * 1.2} ${(unitsPerEm * 1) * 1.2}`);
                         svgElement.setAttribute('style', 'height:4em');
                         svgElement.appendChild(pathElement);
 
@@ -166,11 +183,9 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
                 }
             }
 
-            (
-                sortOrder !== TagsSortBy.OFF ?
-                    fontIcons.sort((a, b) => a.get(sortOrder) < b.get(sortOrder) ? -1 : 1) :
-                    fontIcons
-            ).forEach(x => htmlBody.appendChild(x.element));
+            const sortOrderFactor = sortByOrder === TagSortOrder.DESC ? -1 : 1;
+            fontIcons = sortByField === TagSortBy.NONE ? fontIcons : fontIcons.sort((a, b) => a.get(sortByField) < b.get(sortByField) ? -1 * sortOrderFactor : 1 * sortOrderFactor)
+            fontIcons.forEach(x => htmlBody.appendChild(x.element));
         }
     }
 
@@ -188,25 +203,26 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
     return htmlContentString;
 }
 
-
-// make sort decision configurable.
-function sortingConfig(context: vscode.ExtensionContext): string {
-    return TagsSortBy.HEXCHAR; //NAME; // off, name, char
+function initConfig() {
+    let config = vscode.workspace.getConfiguration('svg-font-previewer');
+    
+    sortByField = TagSortBy.map.get(config.get<string>("iconSortBy", TagSortBy.NONE)) || TagSortBy.NONE;
+    sortByOrder = TagSortOrder.map.get(config.get<string>("iconSortOrder", TagSortOrder.ASC)) || TagSortOrder.ASC;
 }
 
 class SortableTag {
     private fields = new Map<string, string>();
     readonly element: any;
 
-    constructor(name: string, hexChar: string, element: any) {
-        this.fields.set(TagsSortBy.HEXCHAR, hexChar);
-        this.fields.set(TagsSortBy.NAME, name);
+    constructor(name: string, unicode: string, element: any) {
+        this.fields.set(TagSortBy.UNICODE, unicode);
+        this.fields.set(TagSortBy.NAME, name);
         this.element = element;
     }
 
     get(key: string | undefined): string {
         return (key ?
-            this.fields.get(key) || this.fields.get(TagsSortBy.NAME) :
-            this.fields.get(TagsSortBy.NAME)) || '';
+            this.fields.get(key) || this.fields.get(TagSortBy.NAME) :
+            this.fields.get(TagSortBy.NAME)) || '';
     }
 }

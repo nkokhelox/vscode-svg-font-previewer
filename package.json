@@ -3,17 +3,17 @@
     "version": "0.0.1",
     "icon": "res/icon.png",
     "publisher": "nkokhelox",
-    "name": "svg-font-viewer",
-    "displayName": "svg-font-viewer",
+    "name": "svg-font-previewer",
+    "displayName": "svg-font-previewer",
     "homepage": "https://github.com/nkokhelox/svg-font-viewer",
-    "description": "Preview your svg font. Open command pelete `SVG Font Preview` or `cmd+shift+v`",
+    "description": "Preview your svg font. Open command pelete `SVG Font Preview` or `cmd+shift+v`. Font unicode character is show as hexadecimal value.",
     "repository": {
         "type": "git",
         "url": "https://github.com/nkokhelox/svg-font-viewer"
     },
     "bugs": {
-		"url": "https://github.com/nkokhelox/svg-font-viewer/issues"
-	},
+        "url": "https://github.com/nkokhelox/svg-font-viewer/issues"
+    },
     "galleryBanner": {
         "color": "#AAAAAA",
         "theme": "light"
@@ -70,7 +70,27 @@
                 "key": "ctrl+shift+v",
                 "mac": "cmd+shift+v"
             }
-        ]
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "SVG Font Preview",
+            "properties": {
+                "svg-font-previewer.iconSortBy": {
+                    "type": "string",
+                    "default": "none",
+                    "enum": ["none", "name", "unicode"],
+                    "description": "Sort the icons name or it's unicode (displayed as hex character) or don't sort at all",
+                    "scope": "resource"
+                },
+                "svg-font-previewer.iconSortOrder": {
+                    "type": "string",
+                    "enum": ["asc", "desc"],
+                    "default": "ascending",
+                    "description": "Sort the icons in asc(ascending) or desc(descending) order using the specified `iconSortBy` configuration",
+                    "scope": "resource"
+                }
+            }
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
