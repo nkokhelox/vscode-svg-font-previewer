@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
             'extension.svgFontPreview',
             () => {
                 const editorView = vscode.window.activeTextEditor;
-                if (editorView) {
+                if (editorView && isSvg(editorView.document)) {
                     activatePreviewPanel(context, editorView.document, true);
                 }
             }
@@ -82,7 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidOpenTextDocument(
         (document: vscode.TextDocument) => {
-            if (autoOpenPreview && getFileName(document).trim().toLowerCase().endsWith('.svg')) {
+            if (autoOpenPreview && isSvg(document)) {
                 activatePreviewPanel(context, document);
             }
         }
@@ -130,128 +130,143 @@ function getWebViewPanel(
     }
 }
 
-function getFileName(document: vscode.TextDocument): string {
-    return document.fileName.split('/').pop() || 'SVG Font Preview';
-}
-
 function previewSvg(document: vscode.TextDocument): string | undefined {
-    const editorSvgContent = document.getText();
+    let htmlContentString = undefined;
 
-    const parser = new xml.DOMParser();
-    const xmlFontContent = parser.parseFromString(editorSvgContent, `text/xml`);
-    const htmlDocument = parser.parseFromString('<!doctype html>', `text/html`);
+    if (isSvg(document)) {
+        const editorSvgContent = document.getText();
 
-    const fontNodes = xmlFontContent.getElementsByTagName('font-face') || xmlFontContent.getElementsByTagName('font').getAttribute('id');
+        const parser = new xml.DOMParser();
+        const xmlFontContent = parser.parseFromString(editorSvgContent, `text/xml`);
+        const htmlDocument = parser.parseFromString('<!doctype html>', `text/html`);
 
-    const htmlBody = htmlDocument.createElement(`body`);
+        const fontNodes = xmlFontContent.getElementsByTagName('font');
 
-    let renderContent = false;
+        const htmlBody = htmlDocument.createElement(`body`);
 
-    if ((!fontNodes || fontNodes.length <= 0) && document.languageId.toLowerCase() === 'svg') { // Normal svg image
-        const iconContainer = htmlDocument.createElement('a');
-        iconContainer.setAttribute('style', 'text-decoration:none; color:inherit; display:block; margin: 0 auto; min-width:6em; min-height:6em; padding:.5em;');
-        iconContainer.setAttribute('href', '#');
-        iconContainer.appendChild(xmlFontContent);
+        let renderContent = false;
 
-        const iconSvgPath = htmlDocument.createElement('dt');
-        iconSvgPath.setAttribute('style', 'margin:0');
-        iconSvgPath.setAttribute('class', 'glyph');
-        iconSvgPath.appendChild(iconContainer);
+        if (!fontNodes || fontNodes.length <= 0) { // Normal svg image
+            const iconContainer = htmlDocument.createElement('a');
+            iconContainer.setAttribute('style', 'text-decoration:none; color:inherit; display:block; margin: 0 auto; min-width:6em; min-height:6em; padding:.5em;');
+            iconContainer.setAttribute('href', '#');
+            iconContainer.appendChild(xmlFontContent);
 
-        const svgContent = htmlDocument.createElement(`dl`);
-        svgContent.setAttribute('style', 'outline: dotted 1px; min-width: 8em; min-height: 8em; padding: .5em;');
-        svgContent.appendChild(iconSvgPath);
+            const iconSvgPath = htmlDocument.createElement('dt');
+            iconSvgPath.setAttribute('style', 'margin:0');
+            iconSvgPath.setAttribute('class', 'glyph');
+            iconSvgPath.appendChild(iconContainer);
 
-        htmlBody.appendChild(svgContent);
+            const svgContent = htmlDocument.createElement(`dl`);
+            svgContent.setAttribute('style', 'outline: dotted 1px; min-width: 8em; min-height: 8em; padding: .5em;');
+            svgContent.appendChild(iconSvgPath);
 
-        renderContent = true;
-    } else { // Font svg
-        for (let fontIndex = 0; fontNodes && fontIndex < fontNodes.length; fontIndex++) {
-            const fontNode = fontNodes[fontIndex];
-            const ascent = fontNode.getAttribute('ascent');
-            const descent = fontNode.getAttribute('descent');
-            const fontFamily = fontNode.getAttribute('font-family');
-            const unitsPerEm = fontNode.getAttribute('units-per-em');
+            htmlBody.appendChild(svgContent);
 
-            const fontDescriptionElement = parser.parseFromString(`<p><b>Font Name = ${fontFamily}</b> 1em = ${unitsPerEm} ascent = ${ascent} descent = ${descent}</p>`);
+            renderContent = true;
+        } else { // Font svg
+            for (let fontIndex = 0; fontNodes && fontIndex < fontNodes.length; fontIndex++) {
+                const fontNode = fontNodes[fontIndex];
+                const fontFamily = fontNode.getAttribute('id');
+                const fontHorizAdvX = fontNode.getAttribute('horiz-adv-x');
 
-            htmlBody.appendChild(fontDescriptionElement);
+                const fontFace = fontNode.getElementsByTagName('font-face')[0];
+                const unitsPerEm = fontFace.getAttribute('units-per-em');
+                const descent = fontFace.getAttribute('descent');
+                const ascent = fontFace.getAttribute('ascent');
 
-            const glyphList = xmlFontContent.getElementsByTagName('glyph');
-            let fontIcons = [];
+                try {
+                    const fontMetaData = parser.parseFromString(`<p><i>${xmlFontContent.getElementsByTagName('metadata')[0].textContent}</i></p>`);
+                    htmlBody.appendChild(fontMetaData);
+                } catch (error) {
+                    console.error(error);
+                }
 
-            for (let fontIconIndex = 0; fontIconIndex < glyphList.length; fontIconIndex++) {
-                renderContent = true;
+                const fontDescriptionElement = parser.parseFromString(`
+                    <ul>
+                        <li><b>font name:</b> ${fontFamily}</li>
+                        <li><b>horiz-adv-x:</b> ${fontHorizAdvX}</li>
+                        <li><b>1em:</b> ${unitsPerEm}</li>
+                        <li><b>ascent:</b> ${ascent}</li>
+                        <li><b>descent:</b> ${descent}</li>
+                    </ul>
+                `);
+                htmlBody.appendChild(fontDescriptionElement);
 
-                const glyphIcon = glyphList[fontIconIndex];
-                if (glyphIcon) {
-                    const svgPathData = glyphIcon.getAttribute('d');
-                    const unicodeChar = glyphIcon.getAttribute('unicode');
-                    const iconName = glyphIcon.getAttribute('glyph-name');
-                    const horizontalUnits = glyphIcon.getAttribute('horiz-adv-x') || unitsPerEm;
-                    const hexChar = unicodeChar ? (unicodeChar.charCodeAt(0).toString(16)) : null;
+                const glyphList = fontNode.getElementsByTagName('glyph');
+                let fontIcons = [];
 
-                    if (svgPathData) {
-                        const pathElement = htmlDocument.createElement(`path`);
-                        pathElement.setAttribute('transform', `translate(0,${unitsPerEm}) scale(1, -1)`);
-                        pathElement.setAttribute('style', 'fill:currentcolor');
-                        pathElement.setAttribute('d', svgPathData);
+                for (let fontIconIndex = 0; fontIconIndex < glyphList.length; fontIconIndex++) {
+                    renderContent = true;
 
-                        const svgElement = htmlDocument.createElement(`svg`);
-                        svgElement.setAttribute('viewBox', `0 0 ${(horizontalUnits * 1) * 1.2} ${(unitsPerEm * 1) * 1.2}`);
-                        svgElement.setAttribute('style', 'height:4em');
-                        svgElement.appendChild(pathElement);
+                    const glyphIcon = glyphList[fontIconIndex];
+                    if (glyphIcon) {
+                        const svgPathData = glyphIcon.getAttribute('d');
+                        const unicodeChar = glyphIcon.getAttribute('unicode');
+                        const iconName = glyphIcon.getAttribute('glyph-name');
+                        const horizontalUnits = glyphIcon.getAttribute('horiz-adv-x') || unitsPerEm;
+                        const hexChar = unicodeChar ? (unicodeChar.charCodeAt(0).toString(16)) : null;
 
-                        const iconContainer = htmlDocument.createElement('a');
-                        iconContainer.setAttribute('style', `text-decoration:none; color:inherit; display:block; margin: auto auto 30px auto; width:3em; height:4em; padding:.5em;`);
-                        iconContainer.setAttribute('href', '#${iconName}');
-                        iconContainer.setAttribute('name', iconName);
-                        iconContainer.appendChild(svgElement);
+                        if (svgPathData) {
+                            const pathElement = htmlDocument.createElement(`path`);
+                            pathElement.setAttribute('transform', `translate(0,${unitsPerEm}) scale(1, -1)`);
+                            pathElement.setAttribute('style', 'fill:currentcolor');
+                            pathElement.setAttribute('d', svgPathData);
 
-                        const iconSvgPath = htmlDocument.createElement('dt');
-                        iconSvgPath.setAttribute('style', 'margin:0');
-                        iconSvgPath.setAttribute('class', 'glyph');
-                        iconSvgPath.appendChild(iconContainer);
+                            const svgElement = htmlDocument.createElement(`svg`);
+                            svgElement.setAttribute('viewBox', `0 0 ${(horizontalUnits * 1) * 1.2} ${(unitsPerEm * 1) * 1.2}`);
+                            svgElement.setAttribute('style', 'height:4em');
+                            svgElement.appendChild(pathElement);
 
-                        const iconSvgName = htmlDocument.createElement(`span`);
-                        iconSvgName.setAttribute('id', `icon-name-${iconName}`);
-                        iconSvgName.setAttribute('style', `margin: 0; bottom: 0; font-size:15px; overflow:hidden; width:100%;`);
-                        iconSvgName.appendChild(htmlDocument.createTextNode(iconName));
+                            const iconContainer = htmlDocument.createElement('a');
+                            iconContainer.setAttribute('style', `text-decoration:none; color:inherit; display:block; margin: auto auto 30px auto; width:3em; height:4em; padding:.5em;`);
+                            iconContainer.setAttribute('href', '#${iconName}');
+                            iconContainer.setAttribute('name', iconName);
+                            iconContainer.appendChild(svgElement);
 
-                        const iconSvgChar = htmlDocument.createElement(`p`);
-                        iconSvgChar.setAttribute('id', `icon-char-${hexChar}`);
-                        iconSvgChar.setAttribute('style', `font-size:10px; overflow:hidden; width:100%;`);
-                        iconSvgChar.appendChild(htmlDocument.createTextNode(hexChar));
+                            const iconSvgPath = htmlDocument.createElement('dt');
+                            iconSvgPath.setAttribute('style', 'margin:0');
+                            iconSvgPath.setAttribute('class', 'glyph');
+                            iconSvgPath.appendChild(iconContainer);
 
-                        const svgContent = htmlDocument.createElement(`dl`);
-                        svgContent.setAttribute('style', 'margin: 0 0 .5em .5em; float: left; outline: currentcolor dotted 1px; min-width: 10em; min-height: 10em; padding: .5em;');
-                        svgContent.setAttribute('id', iconName);
-                        svgContent.appendChild(iconSvgChar);
-                        svgContent.appendChild(iconSvgPath);
-                        svgContent.appendChild(iconSvgName);
+                            const iconSvgName = htmlDocument.createElement(`span`);
+                            iconSvgName.setAttribute('id', `icon-name-${iconName}`);
+                            iconSvgName.setAttribute('style', `margin: 0; bottom: 0; font-size:15px; overflow:hidden; width:100%;`);
+                            iconSvgName.appendChild(htmlDocument.createTextNode(iconName));
 
-                        fontIcons.push(new SortableTag(iconName, hexChar, svgContent));
+                            const iconSvgChar = htmlDocument.createElement(`p`);
+                            iconSvgChar.setAttribute('id', `icon-char-${hexChar}`);
+                            iconSvgChar.setAttribute('style', `font-size:10px; overflow:hidden; width:100%;`);
+                            iconSvgChar.appendChild(htmlDocument.createTextNode(hexChar));
+
+                            const svgContent = htmlDocument.createElement(`dl`);
+                            svgContent.setAttribute('style', 'margin: 0 0 .5em .5em; float: left; outline: currentcolor dotted 1px; min-width: 10em; min-height: 10em; padding: .5em;');
+                            svgContent.setAttribute('id', iconName);
+                            svgContent.appendChild(iconSvgChar);
+                            svgContent.appendChild(iconSvgPath);
+                            svgContent.appendChild(iconSvgName);
+
+                            fontIcons.push(new SortableTag(iconName, hexChar, svgContent));
+                        }
                     }
                 }
-            }
 
-            const sortOrderFactor = sortByOrder === TagSortOrder.DESC ? -1 : 1;
-            fontIcons = sortByField === TagSortBy.NONE ? fontIcons : fontIcons.sort((a, b) => a.get(sortByField) < b.get(sortByField) ? -1 * sortOrderFactor : 1 * sortOrderFactor)
-            fontIcons.forEach(x => htmlBody.appendChild(x.element));
+                const sortOrderFactor = sortByOrder === TagSortOrder.DESC ? -1 : 1;
+                fontIcons = sortByField === TagSortBy.NONE ? fontIcons : fontIcons.sort((a, b) => a.get(sortByField) < b.get(sortByField) ? -1 * sortOrderFactor : 1 * sortOrderFactor)
+                fontIcons.forEach(x => htmlBody.appendChild(x.element));
+            }
+        }
+
+        if (renderContent) {
+            const htmlContent = htmlDocument.createElement(`html`);
+            htmlContent.appendChild(parser.parseFromString(`<head><meta charset="UTF-8"><title>SVG font preview</title></head>`));
+            htmlContent.setAttribute('lang', 'en');
+            htmlContent.appendChild(htmlBody);
+            htmlDocument.appendChild(htmlContent);
+
+            htmlContentString = new xml.XMLSerializer().serializeToString(htmlDocument);
         }
     }
-
-    let htmlContentString = undefined;
-    if (renderContent) {
-        const htmlContent = htmlDocument.createElement(`html`);
-        htmlContent.appendChild(parser.parseFromString(`<head><meta charset="UTF-8"><title>SVG font preview</title></head>`));
-        htmlContent.setAttribute('lang', 'en');
-        htmlContent.appendChild(htmlBody);
-        htmlDocument.appendChild(htmlContent);
-
-        htmlContentString = new xml.XMLSerializer().serializeToString(htmlDocument);
-    }
-
     return htmlContentString;
 }
 
@@ -261,4 +276,12 @@ function loadConfig() {
     autoOpenPreview = config.get<boolean>("autoOpenPreview", false);
     sortByField = TagSortBy.map.get(config.get<string>("iconSortBy", TagSortBy.NONE)) || TagSortBy.NONE;
     sortByOrder = TagSortOrder.map.get(config.get<string>("iconSortOrder", TagSortOrder.ASC)) || TagSortOrder.ASC;
+}
+
+function getFileName(document: vscode.TextDocument): string {
+    return document.fileName.split('/').pop() || 'SVG Font Preview';
+}
+
+function isSvg(document: vscode.TextDocument): boolean {
+    return document.languageId.trim().toLowerCase() === 'xml' && getFileName(document).trim().toLowerCase().endsWith('.svg');
 }

@@ -15,7 +15,7 @@
         "url": "https://github.com/nkokhelox/svg-font-viewer/issues"
     },
     "galleryBanner": {
-        "color": "#AAAAAA",
+        "color": "#008080",
         "theme": "light"
     },
     "engines": {
@@ -32,52 +32,49 @@
     ],
     "activationEvents": [
         "onCommand:extension.svgFontPreview",
-        "onLanguage:svg"
+        "onLanguage:xml"
     ],
     "main": "./out/extension",
     "contributes": {
-        "languages": [
-            {
-                "id": "svg",
-                "extensions": [
-                    ".svg"
-                ]
-            }
-        ],
         "menus": {
             "commandPalette": [
                 {
                     "command": "extension.svgFontPreview",
-                    "when": "resourceLangId == svg"
+                    "when": "resourceLangId == xml",
+                    "group": "extension"
                 }
             ],
             "editor/title": [
                 {
                     "command": "extension.svgFontPreview",
-                    "when": "resourceLangId == svg"
+                    "when": "resourceLangId == xml",
+                    "group": "extension"
                 }
             ]
         },
         "commands": [
             {
                 "command": "extension.svgFontPreview",
-                "title": "SVG Font Preview"
+                "title": "SVG Font Preview",
+                "group": "extension"
             }
         ],
         "keybindings": [
             {
                 "command": "extension.svgFontPreview",
-                "when": "editorLangId == svg",
+                "when": "editorLangId == xml",
                 "key": "ctrl+shift+v",
-                "mac": "cmd+shift+v"
+                "mac": "cmd+shift+v",
+                "group": "extension"
             }
         ],
         "configuration": {
             "title": "SVG Font Preview",
+            "group": "extension",
             "type": "object",
             "properties": {
                 "svg-font-previewer.iconSortBy": {
-                    "description": "Sort the icons name or it's unicode (displayed as hex character) or don't sort at all",
+                    "description": "Sort the icons by name or it's unicode (displayed as hex character) or don't sort at all",
                     "scope": "resource",
                     "default": "none",
                     "type": "string",
