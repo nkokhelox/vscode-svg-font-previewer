@@ -22,56 +22,108 @@ const TagSortOrder = {
     ])
 };
 
+class SortableTag {
+    private fields = new Map<string, string>();
+    readonly element: any;
+
+    constructor(name: string, unicode: string, element: any) {
+        this.fields.set(TagSortBy.UNICODE, unicode);
+        this.fields.set(TagSortBy.NAME, name);
+        this.element = element;
+    }
+
+    get(key: string | undefined): string {
+        return (key ?
+            this.fields.get(key) || this.fields.get(TagSortBy.NAME) :
+            this.fields.get(TagSortBy.NAME)) || '';
+    }
+}
+
 let sortByField: string = TagSortBy.NONE;
 let sortByOrder: string = TagSortOrder.ASC;
+let autoOpenPreview: boolean = true;
 
 const webviewPanels = new Map<string, vscode.WebviewPanel>();
 
-initConfig();
+loadConfig();
 
 export function deactivate() {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    const textEditorCommand = vscode.commands.registerTextEditorCommand('extension.svgFontPreview', () => activatePreviewPanel(context));
-    context.subscriptions.push(textEditorCommand);
-}
+    context.subscriptions.push(
+        vscode.commands.registerTextEditorCommand(
+            'extension.svgFontPreview',
+            () => {
+                const editorView = vscode.window.activeTextEditor;
+                if (editorView) {
+                    activatePreviewPanel(context, editorView.document, true);
+                }
+            }
+        )
+    );
 
-function activatePreviewPanel(context: vscode.ExtensionContext) {
-    const editorView = vscode.window.activeTextEditor;
-
-    if (editorView) {
-        const htmlContentString = previewSvg(editorView.document);
-        const fileName = getFileName(editorView.document);
-        if (htmlContentString) {
-            const panel = getWebViewPanel(fileName, htmlContentString);
-            if (panel) {
-                panel.onDidDispose(() => webviewPanels.delete(fileName), null, context.subscriptions);
-                panel.reveal(panel.viewColumn);
+    vscode.workspace.onDidChangeConfiguration(
+        (event: vscode.ConfigurationChangeEvent) => {
+            if (event.affectsConfiguration('svg-font-previewer') && webviewPanels.size > 0) {
+                loadConfig();
+                vscode.window.showInformationMessage(`Configuration updated, reopen your font ${webviewPanels.size === 1 ? 'preview' : 'previews'}`);
             }
         }
-        else {
-            vscode.window.showInformationMessage(`'${fileName}' is not the SVG file`);
+    );
+
+    vscode.workspace.onDidSaveTextDocument(
+        (document: vscode.TextDocument) => {
+            if (webviewPanels.has(getFileName(document))) {
+                vscode.window.showInformationMessage(`${getFileName(document)} document saved, reopen the preview`);
+            }
         }
-    } else {
-        vscode.window.showInformationMessage(`There's no open document`);
+    );
+
+    vscode.workspace.onDidOpenTextDocument(
+        (document: vscode.TextDocument) => {
+            if (autoOpenPreview && getFileName(document).trim().toLowerCase().endsWith('.svg')) {
+                activatePreviewPanel(context, document);
+            }
+        }
+    );
+}
+
+function activatePreviewPanel(context: vscode.ExtensionContext, document: vscode.TextDocument, refreshContent: boolean = false) {
+    const fileName = getFileName(document);
+    const panel = getWebViewPanel(fileName, context);
+    if (panel) {
+        if (refreshContent || panel.webview.html === undefined || panel.webview.html === null) {
+            const htmlContentString = previewSvg(document);
+            if (htmlContentString) {
+                panel.webview.html = htmlContentString;
+            } else {
+                vscode.window.showInformationMessage(`'${fileName}' is not the SVG file`);
+            }
+        }
+
+        panel.reveal(panel.viewColumn, true);
     }
 }
 
-function getWebViewPanel(fileName: string, htmlContentString: string, makeNewPanel: boolean = true, panelOptions: object = {}): vscode.WebviewPanel | undefined {
+function getWebViewPanel(
+    fileName: string,
+    context: vscode.ExtensionContext,
+    makeNewPanel: boolean = true,
+    panelOptions: object = {}
+): vscode.WebviewPanel | undefined {
     const maybeExistingPanel = webviewPanels.get(fileName);
 
     if (maybeExistingPanel) {
-        maybeExistingPanel.webview.html = htmlContentString;
         return maybeExistingPanel;
     }
 
     if (makeNewPanel) {
         const editorView = vscode.window.activeTextEditor;
         const toggleViewColumn = editorView && editorView.viewColumn ? editorView.viewColumn % 3 + 1 : vscode.ViewColumn.Two;
-        const newPanel = vscode.window.createWebviewPanel('svgFontPreview', fileName, toggleViewColumn, {});
+        const newPanel = vscode.window.createWebviewPanel('svgFontPreview', fileName, { preserveFocus: true, viewColumn: toggleViewColumn }, panelOptions);
 
-        newPanel.webview.html = htmlContentString;
+        newPanel.onDidDispose(() => webviewPanels.delete(fileName), null, context.subscriptions);
         webviewPanels.set(fileName, newPanel);
 
         return newPanel;
@@ -203,26 +255,10 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
     return htmlContentString;
 }
 
-function initConfig() {
+function loadConfig() {
     let config = vscode.workspace.getConfiguration('svg-font-previewer');
-    
+
+    autoOpenPreview = config.get<boolean>("autoOpenPreview", false);
     sortByField = TagSortBy.map.get(config.get<string>("iconSortBy", TagSortBy.NONE)) || TagSortBy.NONE;
     sortByOrder = TagSortOrder.map.get(config.get<string>("iconSortOrder", TagSortOrder.ASC)) || TagSortOrder.ASC;
-}
-
-class SortableTag {
-    private fields = new Map<string, string>();
-    readonly element: any;
-
-    constructor(name: string, unicode: string, element: any) {
-        this.fields.set(TagSortBy.UNICODE, unicode);
-        this.fields.set(TagSortBy.NAME, name);
-        this.element = element;
-    }
-
-    get(key: string | undefined): string {
-        return (key ?
-            this.fields.get(key) || this.fields.get(TagSortBy.NAME) :
-            this.fields.get(TagSortBy.NAME)) || '';
-    }
 }

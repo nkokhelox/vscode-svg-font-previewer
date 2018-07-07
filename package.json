@@ -31,7 +31,8 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.svgFontPreview"
+        "onCommand:extension.svgFontPreview",
+        "onLanguage:svg"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -72,22 +73,35 @@
             }
         ],
         "configuration": {
-            "type": "object",
             "title": "SVG Font Preview",
+            "type": "object",
             "properties": {
                 "svg-font-previewer.iconSortBy": {
-                    "type": "string",
-                    "default": "none",
-                    "enum": ["none", "name", "unicode"],
                     "description": "Sort the icons name or it's unicode (displayed as hex character) or don't sort at all",
-                    "scope": "resource"
+                    "scope": "resource",
+                    "default": "none",
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "name",
+                        "unicode"
+                    ]
                 },
                 "svg-font-previewer.iconSortOrder": {
-                    "type": "string",
-                    "enum": ["asc", "desc"],
-                    "default": "ascending",
                     "description": "Sort the icons in asc(ascending) or desc(descending) order using the specified `iconSortBy` configuration",
-                    "scope": "resource"
+                    "default": "ascending",
+                    "scope": "resource",
+                    "type": "string",
+                    "enum": [
+                        "asc",
+                        "desc"
+                    ]
+                },
+                "svg-font-previewer.autoOpenPreview": {
+                    "description": "Automatically open svg preview or not",
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         }
