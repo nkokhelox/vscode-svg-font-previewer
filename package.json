@@ -4,7 +4,7 @@
     "icon": "res/icon.png",
     "publisher": "nkokhelox",
     "name": "svg-font-previewer",
-    "displayName": "SVG Font Previwer",
+    "displayName": "SVG Font Previewer",
     "homepage": "https://github.com/nkokhelox/svg-font-viewer",
     "description": "Show the SVG font Icons, Icon name and Icon unicode as hexadecimal value. It can also preview any valid SVG file.",
     "repository": {

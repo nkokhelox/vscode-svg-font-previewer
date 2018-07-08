@@ -43,6 +43,10 @@ This extension contributes the following settings:
 Initial release of SVG Font Previewer
 - Enhancing the way to work with SVG's on VSCode.
 
+### 0.0.2
+
+- Fixing the typo from the display name SVG Font Previewer
+
 --------------------------------------
 
 ## Credits
