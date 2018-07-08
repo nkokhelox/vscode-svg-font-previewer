@@ -5,7 +5,7 @@
     "publisher": "nkokhelox",
     "name": "svg-font-previewer",
     "displayName": "SVG Font Previewer",
-    "homepage": "https://github.com/nkokhelox/svg-font-viewer",
+    "homepage": "https://nkokhelox.github.io/vscode-svg-font-previewer/",
     "description": "Show the SVG font details, icons, icon name and icon unicode as hexadecimal value. It can also preview any valid SVG file.",
     "repository": {
         "type": "git",
