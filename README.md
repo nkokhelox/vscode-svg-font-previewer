@@ -4,12 +4,6 @@
 
 SVG Font Previewer is built for viewing SVG files, especially SVG font files.
 
-## Features
-This extension supports viewing SVG Fonts and SVG images
-- For SVG font it will show the `font name`, `em size scale`, `font icons`.
-- For other SVG's it will just show preview of the SVG as an image.
-- I wish i can say it previews any SVG file. 😉
-
 ## Requirements
 - This depends on [xmldom npm librabry](https://www.npmjs.com/package/xmldom)
 - It currently makes use of vscode webview interface.
@@ -28,6 +22,21 @@ This extension contributes the following settings:
   - `true:` **(default)** also open the SVG preview when opening the SVG file.
     - _This was done so that poeple can preview SVG automatically just by installing this extension. Then they'll learn to turn it off them selves if they want to_
   - `false:` don't automatically open the SVG preview when opening the SVG file.
+
+## Features
+This extension supports viewing SVG Fonts and SVG images
+- For SVG font it will show the `font name`, `em size scale`, `font icons`.
+- For other SVG's it will just show preview of the SVG as an image.
+- I wish i can say it previews any SVG file. 😉
+
+#### Invoke from the command pelette
+- ![Imgur](https://i.imgur.com/aAKukkJ.png)
+
+#### Invoke from editor actions (Where you usually find preview buttons)
+- ![Imgur](https://i.imgur.com/kQqXcr6.png)
+
+#### Changes with the themes
+- ![Imgur](https://i.imgur.com/oqkY9Zk.gif)
 
 ## Known Issues
 
