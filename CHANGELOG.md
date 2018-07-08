@@ -51,6 +51,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [0.1.6] - 2018-07-08
 - Enable preview of other SVG's 
 
+## [0.1.7] - 2018-07-08
+- Updated extension's home page to be github's default project website 
+
 ## [0.9.9] - 2018-07-08
 - Playing with the vsce publisher
 
