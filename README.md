@@ -48,10 +48,11 @@ This extension supports viewing SVG Fonts and SVG images
 - Sort the icons preview by icon names or by icone unicodes in ascending or descending order.
 - For detailed changes see our [CHANGELOG.md](CHANGELOG.md)
 
-### 1.0.0
+### 1.1.1
 
-Initial release of SVG Font Previewer
+Initial public release of SVG Font Previewer
 - Enhancing the way to work with SVG's on VSCode.
+- Packaging the read me related documents.
 
 --------------------------------------
 

@@ -1,6 +1,6 @@
 {
     "preview": true,
-    "version": "1.1.0",
+    "version": "1.1.1",
     "icon": "res/icon.png",
     "publisher": "nkokhelox",
     "name": "svg-font-previewer",
@@ -104,7 +104,7 @@
         }
     },
     "scripts": {
-        "compile": "tsc -p ./",
+        "compile": "rm -rf ./out && tsc -p ./ && cp ./*.md ./out/",
         "watch": "tsc -watch -p ./",
         "vscode:prepublish": "npm run compile",
         "package": "code --install-extension ./*.vsix",
