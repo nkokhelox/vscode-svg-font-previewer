@@ -1,4 +1,4 @@
-# README
+# SVG Font Previewer
 
 [![Build Status](https://travis-ci.org/nkokhelox/svg-font-viewer.svg?branch=master)](https://travis-ci.org/nkokhelox/svg-font-viewer)
 
@@ -38,14 +38,11 @@ This extension contributes the following settings:
 - Quickly preview the font details and how the actual SVG font icons look like.
 - Sort the icons preview by icon names or by icone unicodes in ascending or descending order.
 - For detailed changes see our [CHANGELOG.md](CHANGELOG.md)
-### 0.0.1
+
+### 1.0.0
 
 Initial release of SVG Font Previewer
 - Enhancing the way to work with SVG's on VSCode.
-
-### 0.0.2
-
-- Fixing the typo from the display name SVG Font Previewer
 
 --------------------------------------
 

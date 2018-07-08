@@ -1,12 +1,12 @@
 {
     "preview": true,
-    "version": "0.0.2",
+    "version": "1.0.0",
     "icon": "res/icon.png",
     "publisher": "nkokhelox",
     "name": "svg-font-previewer",
     "displayName": "SVG Font Previewer",
     "homepage": "https://github.com/nkokhelox/svg-font-viewer",
-    "description": "Show the SVG font Icons, Icon name and Icon unicode as hexadecimal value. It can also preview any valid SVG file.",
+    "description": "Show the SVG font details, icons, icon name and icon unicode as hexadecimal value. It can also preview any valid SVG file.",
     "repository": {
         "type": "git",
         "url": "https://github.com/nkokhelox/svg-font-viewer"
@@ -15,7 +15,7 @@
         "url": "https://github.com/nkokhelox/svg-font-viewer/issues"
     },
     "galleryBanner": {
-        "color": "#008080",
+        "color": "#b2fff0",
         "theme": "light"
     },
     "engines": {
