@@ -58,4 +58,6 @@ Initial public release of SVG Font Previewer
 
 ## Credits
 
-* [Anonymous JsFiddle user](http://jsfiddle.net/iegik/r4ckgdc0/)
+* [JsFiddle user](http://jsfiddle.net/iegik/r4ckgdc0/)
+* [icomoon](https://icomoon.io/)
+
