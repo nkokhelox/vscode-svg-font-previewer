@@ -49,11 +49,12 @@ export function deactivate() {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+    loadConfig();
+    
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand(
             'extension.svgFontPreview',
             () => {
-                loadConfig();
                 const editorView = vscode.window.activeTextEditor;
                 if (editorView && isSvg(editorView.document)) {
                     activatePreviewPanel(context, editorView.document, true);
