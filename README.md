@@ -7,7 +7,7 @@ SVG Font Previewer is built for viewing SVG files, especially SVG font files.
 ## Requirements
 - This depends on [xmldom npm librabry](https://www.npmjs.com/package/xmldom)
 - It currently makes use of vscode webview interface.
-- `SVG` file should meet this criteria for it to work with this extension, `resourceLangId == xml` and `fileExtension == .svg`
+- `SVG` file should meet this criteria for it to work with this extension, `resourceLangId == svg`  or `resourceLangId == xml` and `fileExtension == .svg`
 
 ## Extension Settings
 This extension contributes the following settings:
@@ -41,6 +41,10 @@ This extension supports viewing SVG Fonts and SVG images
 ## Known Issues
 
 - The command is available for any `XML` document, still investigating if there's a way to make this extension only work for `SVG`'s without loosing the native VSCode `XML` support.
+
+- If there's a wide icon from the font file, then that icon will flow over icons on the right.
+  - ***[Workaround]** If this hides some icons then, resizing the preview window may help.*
+  - ![Imgur](https://i.imgur.com/yG6NMwg.gif)
 
 ## Release Notes
 
