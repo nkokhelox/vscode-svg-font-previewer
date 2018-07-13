@@ -31,8 +31,7 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.svgFontPreview",
-        "onLanguage:xml"
+        "workspaceContains:**/*.svg"
     ],
     "main": "./out/extension",
     "contributes": {

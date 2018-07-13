@@ -50,7 +50,7 @@ export function deactivate() {
 
 export function activate(context: vscode.ExtensionContext) {
     loadConfig();
-    
+
     context.subscriptions.push(
         vscode.commands.registerTextEditorCommand(
             'extension.svgFontPreview',
@@ -281,9 +281,10 @@ function loadConfig() {
 }
 
 function getFileName(document: vscode.TextDocument): string {
-    return document.fileName.split('/').pop() || 'SVG Font Preview';
+    return `SVG Font Preview: ${document.fileName.split('/').pop()}`;
 }
 
 function isSvg(document: vscode.TextDocument): boolean {
-    return document.languageId.trim().toLowerCase() === 'xml' && getFileName(document).trim().toLowerCase().endsWith('.svg');
+    const lowerLAnguageId = document.languageId.trim().toLowerCase();
+    return lowerLAnguageId == 'svg' || lowerLAnguageId === 'xml' && getFileName(document).trim().toLowerCase().endsWith('.svg');
 }
