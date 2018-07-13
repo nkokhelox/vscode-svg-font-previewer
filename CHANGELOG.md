@@ -67,4 +67,4 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Activate the extension when workspace has .svg files.
 
 ## [1.1.2] - 2018-07-08
-- Including all the *.md files in the package extension.
+- Shredding some bytes, the *.md files were packaged twice.
