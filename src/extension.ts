@@ -46,6 +46,7 @@ let autoOpenPreview: boolean = true;
 const webviewPanels = new Map<string, vscode.WebviewPanel>();
 
 export function deactivate() {
+    webviewPanels.forEach(panel => panel.dispose());
 }
 
 export function activate(context: vscode.ExtensionContext) {
