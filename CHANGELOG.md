@@ -64,4 +64,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Testing what vsce publish minor do.
 
 ## [1.1.1] - 2018-07-08
+- Activate the extension when workspace has .svg files.
+
+## [1.1.2] - 2018-07-08
 - Including all the *.md files in the package extension.
