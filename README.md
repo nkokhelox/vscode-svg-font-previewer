@@ -58,6 +58,7 @@ Initial public release of SVG Font Previewer
 
 ## Credits
 
-* [JsFiddle user](http://jsfiddle.net/iegik/r4ckgdc0/)
+* [**JsFiddle user**](http://jsfiddle.net/iegik/r4ckgdc0/)
+* [Yoco technologies](https://www.yoco.co.za/careers#/)
+* [Stackoverflow](https://stackoverflow.com/users/story/6941707)
 * [icomoon.io](https://icomoon.io/)
-
