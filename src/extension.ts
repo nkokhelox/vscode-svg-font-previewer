@@ -286,6 +286,6 @@ function getFileName(document: vscode.TextDocument): string {
 }
 
 function isSvg(document: vscode.TextDocument): boolean {
-    const lowerLAnguageId = document.languageId.trim().toLowerCase();
-    return lowerLAnguageId == 'svg' || lowerLAnguageId === 'xml' && getFileName(document).trim().toLowerCase().endsWith('.svg');
+    const lowerLanguageId = document.languageId.trim().toLowerCase();
+    return lowerLanguageId == 'svg' || lowerLanguageId === 'xml' && getFileName(document).trim().toLowerCase().endsWith('.svg');
 }

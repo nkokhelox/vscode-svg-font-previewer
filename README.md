@@ -5,7 +5,7 @@
 SVG Font Previewer is built for viewing SVG files, especially SVG font files.
 
 ## Requirements
-- This depends on [xmldom npm librabry](https://www.npmjs.com/package/xmldom)
+- This depends on [xmldom npm library](https://www.npmjs.com/package/xmldom)
 - It currently makes use of vscode webview interface.
 - `SVG` file should meet this criteria for it to work with this extension, `resourceLangId == svg`  or `resourceLangId == xml` and `fileExtension == .svg`
 
@@ -20,16 +20,16 @@ This extension contributes the following settings:
   - `name:` the icon name
 - `svg-font-previewer.autoOpenPreview`: `boolean`
   - `true:` **(default)** also open the SVG preview when opening the SVG file.
-    - _This was done so that poeple can preview SVG automatically just by installing this extension. Then they'll learn to turn it off them selves if they want to_
+    - _This was done so that people can preview SVG automatically just by installing this extension. Then they'll learn to turn it off them selves if they want to_
   - `false:` don't automatically open the SVG preview when opening the SVG file.
 
 ## Features
 This extension supports viewing SVG Fonts and SVG images
 - For SVG font it will show the `font name`, `em size scale`, `font icons`.
-- For other SVG's it will just show preview of the SVG as an image.
+- For other SVGs it will just show preview of the SVG as an image.
 - I wish i can say it previews any SVG file. 😉
 
-#### Invoke from the command pelette
+#### Invoke from the command palette
 - ![Imgur](https://i.imgur.com/aAKukkJ.png)
 
 #### Invoke from editor actions (Where you usually find preview buttons)
@@ -49,14 +49,12 @@ This extension supports viewing SVG Fonts and SVG images
 ## Release Notes
 
 - Quickly preview the font details and how the actual SVG font icons look like.
-- Sort the icons preview by icon names or by icone unicodes in ascending or descending order.
-- For detailed changes see our [CHANGELOG.md](CHANGELOG.md)
+- Sort the icons preview by icon names or by icon unicode in ascending or descending order.
 
 ### 1.1.2
 
-Initial public release of SVG Font Previewer
-- Enhancing the way to work with SVG's on VSCode.
-- Packaging the read me related documents.
+- Enhancing the way to work with SVG files on VSCode.
+- For detailed changes see our [CHANGELOG.md](CHANGELOG.md)
 
 --------------------------------------
 
