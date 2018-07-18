@@ -68,3 +68,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [1.1.2] - 2018-07-08
 - Shredding some bytes, the *.md files were packaged twice.
+
+## [1.1.3] - 2018-07-08
+- Support for svg language id.
