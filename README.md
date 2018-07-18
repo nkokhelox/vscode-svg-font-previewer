@@ -61,6 +61,6 @@ This extension supports viewing SVG Fonts and SVG images
 ## Credits
 
 * [**JsFiddle user**](http://jsfiddle.net/iegik/r4ckgdc0/)
-* [Yoco technologies](https://www.yoco.co.za/careers#/)
+* [Yoco technologies](https://grnh.se/7723f8371)
 * [Stackoverflow](https://stackoverflow.com/users/story/6941707)
 * [icomoon.io](https://icomoon.io/)

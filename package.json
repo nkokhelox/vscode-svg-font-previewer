@@ -41,12 +41,34 @@
                     "command": "extension.svgFontPreview",
                     "when": "resourceLangId == xml",
                     "group": "extension"
+                },
+                {
+                    "command": "extension.svgFontPreview",
+                    "when": "resourceLangId == svg",
+                    "group": "extension"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "extension.svgFontPreview",
+                    "when": "resourceLangId == xml",
+                    "group": "extension"
+                },
+                {
+                    "command": "extension.svgFontPreview",
+                    "when": "resourceLangId == svg",
+                    "group": "extension"
                 }
             ],
             "editor/title": [
                 {
                     "command": "extension.svgFontPreview",
                     "when": "resourceLangId == xml",
+                    "group": "extension"
+                },
+                {
+                    "command": "extension.svgFontPreview",
+                    "when": "resourceLangId == svg",
                     "group": "extension"
                 }
             ]
@@ -62,6 +84,13 @@
             {
                 "command": "extension.svgFontPreview",
                 "when": "editorLangId == xml",
+                "key": "ctrl+shift+v",
+                "mac": "cmd+shift+v",
+                "group": "extension"
+            },
+            {
+                "command": "extension.svgFontPreview",
+                "when": "editorLangId == svg",
                 "key": "ctrl+shift+v",
                 "mac": "cmd+shift+v",
                 "group": "extension"
