@@ -1,6 +1,6 @@
 {
     "preview": true,
-    "version": "1.1.3",
+    "version": "1.1.4",
     "icon": "res/icon.png",
     "publisher": "nkokhelox",
     "name": "svg-font-previewer",
@@ -140,12 +140,12 @@
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "tslint": "^5.8.0",
-        "vscode": "^1.1.6",
-        "typescript": "^2.6.1",
-        "@types/node": "^7.0.43",
         "@types/mocha": "^2.2.42",
-        "@types/xmldom": "^0.1.29"
+        "@types/node": "^7.0.43",
+        "@types/xmldom": "^0.1.29",
+        "tslint": "^5.8.0",
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.30"
     },
     "dependencies": {
         "xmldom": "^0.1.27"

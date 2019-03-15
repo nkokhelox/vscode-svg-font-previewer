@@ -71,3 +71,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [1.1.3] - 2018-07-08
 - Support for svg language id.
+
+## [1.1.4] - 2019-03-15
+- Rebuilt with updated VS Code to remedy the following issues:
+  - [CVE-2018-3774](https://nvd.nist.gov/vuln/detail/CVE-2018-3774): Incorrect parsing in url-parse <1.4.3 returns wrong hostname which leads to multiple vulnerabilities such as SSRF, Open Redirect, Bypass Authentication Protocol.
+  - [CVE-2018-16491](https://nvd.nist.gov/vuln/detail/CVE-2018-16491): A prototype pollution vulnerability was found in node.extend <1.1.7, ~<2.0.1 that allows an attacker to inject arbitrary properties onto Object.prototype.
