@@ -3,6 +3,8 @@ All notable changes to the "SVG Font" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+Date format: YYYY-MM-DD
+
 ## [0.0.1] - 2018-07-08
 - Initial release
 
@@ -76,3 +78,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Rebuilt with updated dependency modules to remedy the following issues:
   - [CVE-2018-3774](https://nvd.nist.gov/vuln/detail/CVE-2018-3774): Incorrect parsing in url-parse <1.4.3 returns wrong hostname which leads to multiple vulnerabilities such as SSRF, Open Redirect, Bypass Authentication Protocol.
   - [CVE-2018-16491](https://nvd.nist.gov/vuln/detail/CVE-2018-16491): A prototype pollution vulnerability was found in node.extend <1.1.7, ~<2.0.1 that allows an attacker to inject arbitrary properties onto Object.prototype.
+
+## [1.1.5] - 2019-06-03
+- Rebuilt with updated dependency modules to remedy the following issues:
+  - [CVE-2018-20834](https://nvd.nist.gov/vuln/detail/CVE-2018-20834): A vulnerability was found in node-tar before version 4.4.2. An Arbitrary File Overwrite issue exists when extracting a tarball containing a hardlink to a file that already exists on the system, in conjunction with a later plain file with the same name as the hardlink. This plain file content replaces the existing file content.
+  - [WS-2019-0100](https://github.com/npm/fstream/commit/6a77d2fa6e1462693cf8e46f930da96ec1b0bb22): Versions of fstream prior to 1.0.12 are vulnerable to Arbitrary File Overwrite.
