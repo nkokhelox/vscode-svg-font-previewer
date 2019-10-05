@@ -144,7 +144,7 @@
         "@types/node": "^7.0.43",
         "@types/xmldom": "^0.1.29",
         "tslint": "^5.20.0",
-        "typescript": "^2.6.1",
+        "typescript": "^3.6.3",
         "vscode": "^1.1.36"
     },
     "dependencies": {
