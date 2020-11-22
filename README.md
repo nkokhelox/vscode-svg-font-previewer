@@ -12,8 +12,8 @@ SVG Font Previewer is built for viewing SVG files, especially SVG font files.
 ## Extension Settings
 This extension contributes the following settings:
 - `svg-font-previewer.iconSortOrder`: `enum[asc, desc]` 
-  - `asc:` **(default)** ascending sort order _(small comes first e.g. 0 > 9 > A > Z > a > z)_
-  - `desc:` descending sort order _(larger comes first e.g. z > a > Z > A > 9 > 0)_
+  - `asc:` **(default)** ascending sort order _(small comes first e.g. 0 -> 9 -> A -> Z -> a -> z)_
+  - `desc:` descending sort order _(larger comes first e.g. z -> a -> Z -> A -> 9 -> 0)_
 - `svg-font-previewer.iconSortBy`: `enum[unicode, name, none]`
   - `none:` **(default)** do not sort at all
   - `unicode`: the icon unicode
