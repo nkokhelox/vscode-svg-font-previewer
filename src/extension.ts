@@ -150,23 +150,7 @@ function previewSvg(document: vscode.TextDocument): string | undefined {
         let renderContent = false;
 
         if (!fontNodes || fontNodes.length <= 0) { // Normal svg image
-            const iconContainer = htmlDocument.createElement('a');
-            iconContainer.setAttribute('style', 'text-decoration:none; color:inherit; display:block; margin: 0 auto; min-width:6em; min-height:6em; padding:.5em;');
-            iconContainer.setAttribute('href', '#');
-            iconContainer.appendChild(xmlFontContent);
-
-            const iconSvgPath = htmlDocument.createElement('dt');
-            iconSvgPath.setAttribute('style', 'margin:0');
-            iconSvgPath.setAttribute('class', 'glyph');
-            iconSvgPath.appendChild(iconContainer);
-
-            const svgContent = htmlDocument.createElement(`dl`);
-            svgContent.setAttribute('style', 'outline: dotted 1px; min-width: 8em; min-height: 8em; padding: .5em;');
-            svgContent.appendChild(iconSvgPath);
-
-            htmlBody.appendChild(svgContent);
-
-            renderContent = true;
+            vscode.window.showInformationMessage(`'${getFileName(document)}' is not the Font SVG file`);
         } else { // Font svg
             for (let fontIndex = 0; fontNodes && fontIndex < fontNodes.length; fontIndex++) {
                 const fontNode = fontNodes[fontIndex];

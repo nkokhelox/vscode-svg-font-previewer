@@ -1,12 +1,12 @@
 {
     "preview": true,
-    "version": "1.1.5",
+    "version": "2.0.0",
     "icon": "res/icon.png",
     "publisher": "nkokhelox",
     "name": "svg-font-previewer",
     "displayName": "SVG Font Previewer",
     "homepage": "https://nkokhelox.github.io/vscode-svg-font-previewer/",
-    "description": "Show the SVG font details, icons, icon name and icon unicode as hexadecimal value. It can also preview any valid SVG file.",
+    "description": "Show the SVG font details, icons, icon name and icon unicode as hexadecimal value.",
     "repository": {
         "type": "git",
         "url": "https://github.com/nkokhelox/svg-font-viewer"
@@ -39,60 +39,38 @@
             "commandPalette": [
                 {
                     "command": "extension.svgFontPreview",
-                    "when": "resourceLangId == xml",
-                    "group": "extension"
-                },
-                {
-                    "command": "extension.svgFontPreview",
-                    "when": "resourceLangId == svg",
+                    "when": "(resourceLangId == xml && resourceExtname == .svg) || resourceLangId == svg",
                     "group": "extension"
                 }
             ],
             "editor/context": [
                 {
                     "command": "extension.svgFontPreview",
-                    "when": "resourceLangId == xml",
-                    "group": "extension"
-                },
-                {
-                    "command": "extension.svgFontPreview",
-                    "when": "resourceLangId == svg",
+                    "when": "(resourceLangId == xml && resourceExtname == .svg) || resourceLangId == svg",
                     "group": "extension"
                 }
             ],
             "editor/title": [
                 {
                     "command": "extension.svgFontPreview",
-                    "when": "resourceLangId == xml",
-                    "group": "extension"
-                },
-                {
-                    "command": "extension.svgFontPreview",
-                    "when": "resourceLangId == svg",
+                    "when": "(resourceLangId == xml && resourceExtname == .svg) || resourceLangId == svg",
                     "group": "extension"
                 }
             ]
         },
+        "keybindings": [
+            {
+                "command": "extension.svgFontPreview",
+                "when": "(resourceLangId == xml && resourceExtname == .svg) || resourceLangId == svg",
+                "key": "ctrl+shift+v",
+                "mac": "cmd+shift+v",
+                "group": "extension"
+            }
+        ],
         "commands": [
             {
                 "command": "extension.svgFontPreview",
                 "title": "SVG Font Preview",
-                "group": "extension"
-            }
-        ],
-        "keybindings": [
-            {
-                "command": "extension.svgFontPreview",
-                "when": "editorLangId == xml",
-                "key": "ctrl+shift+v",
-                "mac": "cmd+shift+v",
-                "group": "extension"
-            },
-            {
-                "command": "extension.svgFontPreview",
-                "when": "editorLangId == svg",
-                "key": "ctrl+shift+v",
-                "mac": "cmd+shift+v",
                 "group": "extension"
             }
         ],
@@ -136,16 +114,16 @@
         "watch": "tsc -watch -p ./",
         "vscode:prepublish": "npm run compile",
         "package": "code --install-extension ./*.vsix",
-        "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
+        "@types/vscode": "^1.1.37",
         "@types/mocha": "^5.2.7",
-        "@types/node": "^12.7.11",
-        "@types/xmldom": "^0.1.29",
-        "tslint": "^5.20.0",
-        "typescript": "^3.6.3",
-        "vscode": "^1.1.36"
+        "@types/node": "^12.20.17",
+        "@types/xmldom": "^0.1.31",
+        "tslint": "^5.20.1",
+        "typescript": "^3.9.10",
+        "vscode-test": "^1.6.1"
     },
     "dependencies": {
         "xmldom": "^0.5.0"
