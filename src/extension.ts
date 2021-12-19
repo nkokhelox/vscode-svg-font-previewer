@@ -75,18 +75,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
-    vscode.workspace.onDidSaveTextDocument(
-        (document: vscode.TextDocument) => {
-            if (webviewPanels.has(getFileName(document))) {
-                vscode.window.showInformationMessage(`${getFileName(document)} document saved, reopen the preview`);
-            }
-        }
-    );
-
     vscode.workspace.onDidOpenTextDocument(
         (document: vscode.TextDocument) => {
             if (autoOpenPreview) {
-                activatePreviewPanel(context, document, true);
+                activatePreviewPanel(context, document, true, true);
             }
         }
     );
@@ -157,7 +149,8 @@ function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string
     for (let fontIndex = 0; fontNodes && fontIndex < fontNodes.length; fontIndex++) {
         const fontNode = fontNodes[fontIndex];
         const fontFamily = fontNode.getAttribute('id');
-        const fontHorizAdvX = fontNode.getAttribute('horiz-adv-x');
+        const fontHorizAdvX = fontNode.getAttribute('horiz-adv-x') || "0";
+        const fontWidth = parseInt(fontHorizAdvX);
 
         const fontFace = fontNode.getElementsByTagName('font-face')[0];
         const unitsPerEm = fontFace.getAttribute('units-per-em') || "1";
@@ -194,10 +187,8 @@ function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string
                 const iconName = glyphIcon.getAttribute('glyph-name') || '????';
                 const horizontalUnits = glyphIcon.getAttribute('horiz-adv-x') || unitsPerEm;
                 const hexChar = unicodeChar ? (unicodeChar.charCodeAt(0).toString(16)) : "";
-
-                const widthInt = parseInt(horizontalUnits);
-
-                let emWidth = (widthInt > 1024) ? (widthInt / 320) : 4;
+                const iconWidth = parseInt(horizontalUnits);
+                const emWidth = 4 + Math.round(iconWidth / fontWidth);
 
                 if (svgPathData) {
                     const pathElement = htmlDocument.createElement(`path`);
