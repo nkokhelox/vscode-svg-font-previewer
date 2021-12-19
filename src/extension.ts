@@ -14,11 +14,11 @@ const TagSortBy = {
 };
 
 const TagSortOrder = {
-    ASC: 'asc',
-    DESC: 'desc',
+    ASC: 'ascending',
+    DESC: 'descending',
     map: new Map([
-        ['asc', 'asc'],
-        ['desc', 'desc']
+        ['ascending', 'ascending'],
+        ['descending', 'descending']
     ])
 };
 

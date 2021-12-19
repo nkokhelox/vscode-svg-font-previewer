@@ -92,13 +92,13 @@
                     ]
                 },
                 "svg-font-previewer.iconSortOrder": {
-                    "description": "Sort the icons in asc(ascending) or desc(descending) order using the specified `iconSortBy` configuration",
+                    "description": "Sort the icons in ascending or descending order using the specified `iconSortBy` configuration",
                     "default": "ascending",
                     "scope": "resource",
                     "type": "string",
                     "enum": [
-                        "asc",
-                        "desc"
+                        "ascending",
+                        "descending"
                     ]
                 },
                 "svg-font-previewer.autoOpenPreview": {
