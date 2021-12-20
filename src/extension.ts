@@ -262,7 +262,7 @@ function loadConfig() {
 }
 
 function getFileName(document: vscode.TextDocument): string {
-    return `SVG Font Preview: ${document.fileName.split('/').pop()}`;
+    return `SVG Font: ${document.fileName.split('/').pop()}`;
 }
 
 function isSvg(document: vscode.TextDocument): boolean {

@@ -84,5 +84,6 @@ Date format: YYYY-MM-DD
   - [CVE-2018-20834](https://nvd.nist.gov/vuln/detail/CVE-2018-20834): A vulnerability was found in node-tar before version 4.4.2. An Arbitrary File Overwrite issue exists when extracting a tarball containing a hardlink to a file that already exists on the system, in conjunction with a later plain file with the same name as the hardlink. This plain file content replaces the existing file content.
   - [WS-2019-0100](https://github.com/npm/fstream/commit/6a77d2fa6e1462693cf8e46f930da96ec1b0bb22): Versions of fstream prior to 1.0.12 are vulnerable to Arbitrary File Overwrite.
 
-## [2.0.0] - 2021-07-26
-[Only activate if font tag is present](https://github.com/nkokhelox/vscode-svg-font-previewer/issues/20)
+## [2.0.0] - 2021-12-19
+- [Only activate if font tag is present](https://github.com/nkokhelox/vscode-svg-font-previewer/issues/20)
+- Reduce the possibility of an icon overflowing to the icon on its right side.

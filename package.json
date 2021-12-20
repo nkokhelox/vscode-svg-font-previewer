@@ -47,14 +47,14 @@
             "editor/context": [
                 {
                     "command": "extension.svgFontPreview",
-                    "when": "(resourceLangId == xml && resourceExtname == .svg) || resourceLangId == svg",
+                    "when": "resourceLangId == xml && resourceExtname == .svg",
                     "group": "extension"
                 }
             ],
             "editor/title": [
                 {
                     "command": "extension.svgFontPreview",
-                    "when": "(resourceLangId == xml && resourceExtname == .svg) || resourceLangId == svg",
+                    "when": "resourceLangId == xml && resourceExtname == .svg",
                     "group": "extension"
                 }
             ]
@@ -62,7 +62,7 @@
         "keybindings": [
             {
                 "command": "extension.svgFontPreview",
-                "when": "(resourceLangId == xml && resourceExtname == .svg) || resourceLangId == svg",
+                "when": "resourceLangId == xml && resourceExtname == .svg",
                 "key": "ctrl+shift+v",
                 "mac": "cmd+shift+v",
                 "group": "extension"
@@ -81,7 +81,7 @@
             "type": "object",
             "properties": {
                 "svg-font-previewer.iconSortBy": {
-                    "description": "Sort the icons by name or it's unicode (displayed as hex character) or don't sort at all",
+                    "description": "Sort the icons by name or by unicode (displayed as hex character) or don't sort at all",
                     "scope": "resource",
                     "default": "none",
                     "type": "string",
