@@ -27,12 +27,10 @@ const Render = {
     DEFAULT: 'default',
     STROKE: 'stroke',
     FILL: 'fill',
-    STROKE_AND_FILL: "stroke and fill",
     map: new Map([
         ['default', 'default'],
         ['fill', 'fill'],
         ['stroke', 'stroke'],
-        ['stroke and fill', 'stroke and fill'],
     ])
 };
 
