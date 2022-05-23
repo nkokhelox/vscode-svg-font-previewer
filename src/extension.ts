@@ -191,10 +191,17 @@ function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string
                 const emWidth = 4 + Math.round(iconWidth / fontWidth);
 
                 if (svgPathData) {
+                    const fill = glyphIcon.getAttribute('fill');
                     const pathElement = htmlDocument.createElement(`path`);
                     pathElement.setAttribute('transform', `translate(0,${unitsPerEm}) scale(1, -1)`);
-                    pathElement.setAttribute('style', 'fill:currentcolor');
                     pathElement.setAttribute('d', svgPathData);
+                    if (fill) {
+                        pathElement.setAttribute('stroke', 'currentColor');
+                        pathElement.setAttribute('stroke-width', '2');
+                        pathElement.setAttribute('fill', 'none');
+                    } else {
+                        pathElement.setAttribute('fill', 'currentColor');
+                    }
 
                     const svgElement = htmlDocument.createElement(`svg`);
                     svgElement.setAttribute('viewBox', `0 0 ${((+horizontalUnits) * 1) * 1.2} ${((+unitsPerEm) * 1) * 1.2}`);
@@ -249,7 +256,9 @@ function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string
     htmlContent.appendChild(htmlBody);
     htmlDocument.appendChild(htmlContent);
 
-    return new xml.XMLSerializer().serializeToString(htmlDocument);
+    const html = new xml.XMLSerializer().serializeToString(htmlDocument);
+
+    return html;
 
 }
 
