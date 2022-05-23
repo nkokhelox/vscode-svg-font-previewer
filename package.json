@@ -106,6 +106,17 @@
                     "scope": "resource",
                     "type": "boolean",
                     "default": true
+                },
+                "svg-font-previewer.iconRendering": {
+                    "description": "Specified how your icons should be rendered on the preview window",
+                    "default": "default",
+                    "scope": "resource",
+                    "type": "string",
+                    "enum": [
+                        "default",
+                        "stroke",
+                        "fill"
+                    ]
                 }
             }
         }

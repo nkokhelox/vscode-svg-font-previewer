@@ -1,4 +1,5 @@
 'use strict';
+import { readlink } from 'fs';
 import * as vscode from 'vscode';
 import * as xml from 'xmldom';
 
@@ -22,6 +23,19 @@ const TagSortOrder = {
     ])
 };
 
+const Render = {
+    DEFAULT: 'default',
+    STROKE: 'stroke',
+    FILL: 'fill',
+    STROKE_AND_FILL: "stroke and fill",
+    map: new Map([
+        ['default', 'default'],
+        ['fill', 'fill'],
+        ['stroke', 'stroke'],
+        ['stroke and fill', 'stroke and fill'],
+    ])
+};
+
 class SortableTag {
     private fields = new Map<string, string>();
     readonly element: any;
@@ -39,6 +53,7 @@ class SortableTag {
     }
 }
 
+let renderering: string = Render.DEFAULT;
 let sortByField: string = TagSortBy.NONE;
 let sortByOrder: string = TagSortOrder.ASC;
 let autoOpenPreview: boolean = true;
@@ -191,21 +206,33 @@ function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string
                 const emWidth = 4 + Math.round(iconWidth / fontWidth);
 
                 if (svgPathData) {
-                    const fill = glyphIcon.getAttribute('fill');
                     const pathElement = htmlDocument.createElement(`path`);
                     pathElement.setAttribute('transform', `translate(0,${unitsPerEm}) scale(1, -1)`);
                     pathElement.setAttribute('d', svgPathData);
-                    if (fill) {
-                        pathElement.setAttribute('stroke', 'currentColor');
-                        pathElement.setAttribute('stroke-width', '2');
-                        pathElement.setAttribute('fill', 'none');
-                    } else {
-                        pathElement.setAttribute('fill', 'currentColor');
+                    switch (renderering) {
+                        case Render.STROKE:
+                            pathElement.setAttribute('stroke', 'currentColor');
+                            pathElement.setAttribute('stroke-width', '1%');
+                            pathElement.setAttribute('fill', 'none');
+                            break;
+                        case Render.FILL:
+                            pathElement.setAttribute('fill', 'currentColor');
+                            break;
+                        default:
+                            const fill = glyphIcon.getAttribute('fill');
+                            if (fill) {
+                                pathElement.setAttribute('stroke', 'currentColor');
+                                pathElement.setAttribute('stroke-width', '2');
+                                pathElement.setAttribute('fill', 'none');
+                            } else {
+                                pathElement.setAttribute('fill', 'currentColor');
+                            }
+                            break;
                     }
 
                     const svgElement = htmlDocument.createElement(`svg`);
                     svgElement.setAttribute('viewBox', `0 0 ${((+horizontalUnits) * 1) * 1.2} ${((+unitsPerEm) * 1) * 1.2}`);
-                    svgElement.setAttribute('style', 'height:4em');
+                    svgElement.setAttribute('style', 'height:4em;');
                     svgElement.appendChild(pathElement);
 
                     const iconContainer = htmlDocument.createElement('a');
@@ -266,6 +293,7 @@ function loadConfig() {
     let config = vscode.workspace.getConfiguration('svg-font-previewer');
 
     autoOpenPreview = config.get<boolean>("autoOpenPreview", false);
+    renderering = Render.map.get(config.get<string>("iconRendering", Render.DEFAULT)) || Render.DEFAULT;
     sortByField = TagSortBy.map.get(config.get<string>("iconSortBy", TagSortBy.NONE)) || TagSortBy.NONE;
     sortByOrder = TagSortOrder.map.get(config.get<string>("iconSortOrder", TagSortOrder.ASC)) || TagSortOrder.ASC;
 }
