@@ -1,7 +1,6 @@
 'use strict';
-import { readlink } from 'fs';
 import * as vscode from 'vscode';
-import * as xml from 'xmldom';
+const { DOMParser, XMLSerializer } = require('@xmldom/xmldom')
 
 const TagSortBy = {
     UNICODE: 'unicode',
@@ -24,13 +23,15 @@ const TagSortOrder = {
 };
 
 const Render = {
-    DEFAULT: 'default',
+    MIXED: 'mixed',
     STROKE: 'stroke',
     FILL: 'fill',
+    BOTH: 'both',
     map: new Map([
-        ['default', 'default'],
+        ['mixed', 'mixed'],
         ['fill', 'fill'],
         ['stroke', 'stroke'],
+        ['both', 'both'],
     ])
 };
 
@@ -51,7 +52,8 @@ class SortableTag {
     }
 }
 
-let renderering: string = Render.DEFAULT;
+let strokeWidth: number = 1;
+let renderMode: string = Render.MIXED;
 let sortByField: string = TagSortBy.NONE;
 let sortByOrder: string = TagSortOrder.ASC;
 let autoOpenPreview: boolean = true;
@@ -102,7 +104,7 @@ function activatePreviewPanel(context: vscode.ExtensionContext, document: vscode
         const fileName = getFileName(document);
         const editorSvgContent = document.getText();
 
-        const parser = new xml.DOMParser();
+        const parser = new DOMParser();
         const xmlFontContent = parser.parseFromString(editorSvgContent, `text/xml`);
         const fontNodes = xmlFontContent.getElementsByTagName('font');
 
@@ -152,7 +154,7 @@ function getWebViewPanel(
     }
 }
 
-function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string | undefined {
+function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string | undefined {
     // Setup the html to show in the preview
     const htmlDocument = parser.parseFromString('<!doctype html>', `text/html`);
     const htmlBody = htmlDocument.createElement(`body`);
@@ -207,24 +209,29 @@ function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string
                     const pathElement = htmlDocument.createElement(`path`);
                     pathElement.setAttribute('transform', `translate(0,${unitsPerEm}) scale(1, -1)`);
                     pathElement.setAttribute('d', svgPathData);
-                    switch (renderering) {
+                    switch (renderMode) {
                         case Render.STROKE:
                             pathElement.setAttribute('stroke', 'currentColor');
-                            pathElement.setAttribute('stroke-width', '1%');
+                            pathElement.setAttribute('stroke-width', `${strokeWidth}`);
                             pathElement.setAttribute('fill', 'none');
                             break;
                         case Render.FILL:
                             pathElement.setAttribute('fill', 'currentColor');
                             break;
-                        default:
+                        case Render.MIXED:
                             const fill = glyphIcon.getAttribute('fill');
                             if (fill) {
                                 pathElement.setAttribute('stroke', 'currentColor');
-                                pathElement.setAttribute('stroke-width', '2');
+                                pathElement.setAttribute('stroke-width', `${strokeWidth}`);
                                 pathElement.setAttribute('fill', 'none');
                             } else {
                                 pathElement.setAttribute('fill', 'currentColor');
                             }
+                            break;
+                        default:
+                            pathElement.setAttribute('fill', '#fc8d8d');
+                            pathElement.setAttribute('stroke', 'black');
+                            pathElement.setAttribute('stroke-width', `${strokeWidth}`);
                             break;
                     }
 
@@ -235,8 +242,7 @@ function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string
 
                     const iconContainer = htmlDocument.createElement('a');
                     iconContainer.setAttribute('style', `text-decoration:none; color:inherit; display:block; margin: auto auto 30px auto; width:${emWidth}em; height:4em; padding:.5em;`);
-                    iconContainer.setAttribute('href', '#${iconName}');
-                    iconContainer.setAttribute('name', iconName);
+                    iconContainer.setAttribute('title', iconName);
                     iconContainer.appendChild(svgElement);
 
                     const iconSvgPath = htmlDocument.createElement('dt');
@@ -248,22 +254,36 @@ function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string
                     glyphDiv.appendChild(iconSvgPath);
                     glyphDiv.setAttribute('style', `text-align: center;margin-left: auto;margin-right: auto;`);
 
-                    const iconSvgName = htmlDocument.createElement(`span`);
-                    iconSvgName.setAttribute('id', `icon-name-${iconName}`);
-                    iconSvgName.setAttribute('style', `margin: 0; bottom: 0; font-size:15px; overflow:hidden; width:100%;`);
-                    iconSvgName.appendChild(htmlDocument.createTextNode(iconName));
+                    const glyphName = htmlDocument.createElement(`a`);
+                    glyphName.setAttribute('title', "icon name");
+                    glyphName.setAttribute('id', `icon-name-${iconName}`);
+                    glyphName.appendChild(htmlDocument.createTextNode(iconName));
+                    const glyphNameStyle = `margin: 0; bottom: 0; font-size:15px; overflow:hidden; width:100%;`;
+                    if (renderMode == Render.BOTH) {
+                        glyphName.setAttribute('style', `${glyphNameStyle} color:black;`);
+                    } else {
+                        glyphName.setAttribute('style', glyphNameStyle);
+                    }
 
-                    const iconSvgChar = htmlDocument.createElement(`p`);
-                    iconSvgChar.setAttribute('id', `icon-char-${hexChar}`);
-                    iconSvgChar.setAttribute('style', `font-size:10px; overflow:hidden; width:100%;`);
-                    iconSvgChar.appendChild(htmlDocument.createTextNode(hexChar));
+                    const glyphUnicode = htmlDocument.createElement(`a`);
+                    glyphUnicode.setAttribute('title', "glyph unicode");
+                    glyphUnicode.setAttribute('id', `icon-char-${hexChar}`);
+                    glyphUnicode.appendChild(htmlDocument.createTextNode(hexChar));
+                    const glyphUnicodeStyle = `font-size:10px; overflow:hidden; width:100%;`;
+                    if (renderMode == Render.BOTH) {
+                        glyphUnicode.setAttribute('style', `${glyphUnicodeStyle} color:black;`);
+                    } else {
+                        glyphUnicode.setAttribute('style', glyphUnicodeStyle);
+                    }
 
                     const svgContent = htmlDocument.createElement(`dl`);
-                    svgContent.setAttribute('style', 'margin: 0 0 .5em .5em; float: left; outline: currentcolor dotted 1px; min-width: 10em; min-height: 10em; padding: .5em;');
+                    if (renderMode == Render.BOTH) {
+                        svgContent.setAttribute('style', 'background-color:#ffffff;');
+                    }
                     svgContent.setAttribute('id', iconName);
-                    svgContent.appendChild(iconSvgChar);
+                    svgContent.appendChild(glyphUnicode);
                     svgContent.appendChild(glyphDiv);
-                    svgContent.appendChild(iconSvgName);
+                    svgContent.appendChild(glyphName);
 
                     fontIcons.push(new SortableTag(iconName, hexChar, svgContent));
                 }
@@ -276,12 +296,34 @@ function previewSvgFont(parser: xml.DOMParser, xmlFontContent: Document): string
     }
 
     const htmlContent = htmlDocument.createElement(`html`);
-    htmlContent.appendChild(parser.parseFromString(`<head><meta charset="UTF-8"><title>SVG font preview</title></head>`));
+    htmlContent.appendChild(parser.parseFromString(
+        `<head>
+            <meta charset="UTF-8">
+            <title>SVG font preview</title>
+            <style>
+                dl { 
+                    float: left; 
+                    padding: .5em;
+                    min-width: 10em; 
+                    min-height: 10em; 
+                    margin: 0 0 .5em .5em;
+                    outline: currentcolor dotted 1px; 
+                    filter: invert(.1);
+                }
+                dl:hover {
+                    outline: currentcolor solid 1px;
+                    filter: invert(0);
+                }
+            </style>
+        </head>`
+    ));
     htmlContent.setAttribute('lang', 'en');
     htmlContent.appendChild(htmlBody);
     htmlDocument.appendChild(htmlContent);
 
-    const html = new xml.XMLSerializer().serializeToString(htmlDocument);
+    const html = new XMLSerializer().serializeToString(htmlDocument);
+
+    console.log(html);
 
     return html;
 
@@ -291,7 +333,8 @@ function loadConfig() {
     let config = vscode.workspace.getConfiguration('svg-font-previewer');
 
     autoOpenPreview = config.get<boolean>("autoOpenPreview", false);
-    renderering = Render.map.get(config.get<string>("iconRendering", Render.DEFAULT)) || Render.DEFAULT;
+    renderMode = Render.map.get(config.get<string>("iconRenderMode", Render.MIXED)) || Render.MIXED;
+    strokeWidth = (config.get<number>("iconRenderStrokeWidth", 1));
     sortByField = TagSortBy.map.get(config.get<string>("iconSortBy", TagSortBy.NONE)) || TagSortBy.NONE;
     sortByOrder = TagSortOrder.map.get(config.get<string>("iconSortOrder", TagSortOrder.ASC)) || TagSortOrder.ASC;
 }

@@ -87,3 +87,7 @@ Date format: YYYY-MM-DD
 ## [2.0.0] - 2021-12-19
 - [Only activate if font tag is present](https://github.com/nkokhelox/vscode-svg-font-previewer/issues/20)
 - Reduce the possibility of an icon overflowing to the icon on its right side.
+
+## [2.1.0] - 2022-05-23
+- Add the support for choosing the icon rendering mode [mixed, fill, stroke, both] and the stroke width.
+- Upgraded xmldom to a newer version remediate an issue where an older xmldom version do not correctly escape special characters when serializing elements removed from their ancestor.

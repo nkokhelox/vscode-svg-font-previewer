@@ -1,6 +1,6 @@
 {
     "preview": true,
-    "version": "2.0.0",
+    "version": "2.1.0",
     "icon": "res/icon.png",
     "publisher": "nkokhelox",
     "name": "svg-font-previewer",
@@ -28,7 +28,8 @@
         "preview"
     ],
     "categories": [
-        "Other"
+        "Other",
+        "Visualization"
     ],
     "activationEvents": [
         "workspaceContains:**/*.svg",
@@ -80,7 +81,15 @@
             "group": "extension",
             "type": "object",
             "properties": {
+                "svg-font-previewer.autoOpenPreview": {
+                    "order": 0,
+                    "description": "Automatically open the svg preview panel",
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": true
+                },
                 "svg-font-previewer.iconSortBy": {
+                    "order": 1,
                     "description": "Sort the icons by name or by unicode (displayed as hex character) or don't sort at all",
                     "scope": "resource",
                     "default": "none",
@@ -89,9 +98,15 @@
                         "none",
                         "name",
                         "unicode"
+                    ],
+                    "enumDescriptions": [
+                        "Don't sort icons, render them as they are ordered in the file",
+                        "Sort the displayed icons by their names",
+                        "Sort the displayed icons by their unicode"
                     ]
                 },
                 "svg-font-previewer.iconSortOrder": {
+                    "order": 2,
                     "description": "Sort the icons in ascending or descending order using the specified `iconSortBy` configuration",
                     "default": "ascending",
                     "scope": "resource",
@@ -99,24 +114,38 @@
                     "enum": [
                         "ascending",
                         "descending"
+                    ],
+                    "enumDescriptions": [
+                        "small comes first e.g. 0 -> 9 -> A -> Z -> a -> z",
+                        "larger comes first e.g. z -> a -> Z -> A -> 9 -> 0"
                     ]
                 },
-                "svg-font-previewer.autoOpenPreview": {
-                    "description": "Automatically open svg preview or not",
-                    "scope": "resource",
-                    "type": "boolean",
-                    "default": true
-                },
-                "svg-font-previewer.iconRendering": {
-                    "description": "Specified how your icons should be rendered on the preview window",
-                    "default": "default",
+                "svg-font-previewer.iconRenderMode": {
+                    "order": 3,
+                    "description": "Specifies how your icons should be rendered on the preview window",
+                    "default": "mixed",
                     "scope": "resource",
                     "type": "string",
                     "enum": [
-                        "default",
+                        "mixed",
+                        "fill",
                         "stroke",
-                        "fill"
+                        "both"
+                    ],
+                    "enumDescriptions": [
+                        "Draw only the fill color excluding the path stroke, switch to path stroke only for a glyph with fill='none' property.",
+                        "Draw only the fill color excluding the path stroke",
+                        "Draw only the path stroke excluding the fill color",
+                        "Draw both the path stroke and the fill color."
                     ]
+                },
+                "svg-font-previewer.iconRenderStrokeWidth": {
+                    "order": 4,
+                    "description": "Specifies the strokeWidth for when rendering icons in stroke mode",
+                    "scope": "resource",
+                    "type": "integer",
+                    "default": 5,
+                    "minimum": 1
                 }
             }
         }
@@ -131,11 +160,10 @@
     "devDependencies": {
         "@types/node": "14.x",
         "@types/vscode": "^1.63.1",
-        "@types/xmldom": "^0.1.31",
         "tslint": "^5.20.1",
         "typescript": "^4.5.4"
     },
     "dependencies": {
-        "xmldom": "^0.6.0"
+        "@xmldom/xmldom": "^0.8.2"
     }
 }
