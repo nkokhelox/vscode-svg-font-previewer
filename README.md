@@ -1,6 +1,6 @@
 # SVG Font Previewer
 
-[![Build Status](https://travis-ci.org/nkokhelox/vscode-svg-font-previewer.svg?branch=master)](https://travis-ci.org/nkokhelox/vscode-svg-font-previewer)
+[![Node.js CI](https://github.com/nkokhelox/vscode-svg-font-previewer/actions/workflows/node.js.yml/badge.svg?branch=master)](https://github.com/nkokhelox/vscode-svg-font-previewer/actions/workflows/node.js.yml)
 
 SVG Font Previewer is built for viewing *SVG Font* files only.
 
