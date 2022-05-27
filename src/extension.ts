@@ -236,7 +236,7 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
                     }
 
                     const svgElement = htmlDocument.createElement(`svg`);
-                    svgElement.setAttribute('viewBox', `0 0 ${((+horizontalUnits) * 1) * 1.2} ${((+unitsPerEm) * 1) * 1.2}`);
+                    svgElement.setAttribute('viewBox', `-${strokeWidth} -${strokeWidth} ${strokeWidth + ((+horizontalUnits) * 1) * 1.2} ${strokeWidth + ((+unitsPerEm) * 1) * 1.2}`);
                     svgElement.setAttribute('style', 'height:4em;');
                     svgElement.appendChild(pathElement);
 
@@ -322,6 +322,8 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
     htmlDocument.appendChild(htmlContent);
 
     const html = new XMLSerializer().serializeToString(htmlDocument);
+
+    console.log(html);
 
     return html;
 }

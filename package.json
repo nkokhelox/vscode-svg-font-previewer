@@ -144,7 +144,8 @@
                     "description": "Specifies the strokeWidth for when rendering icons in stroke mode",
                     "scope": "resource",
                     "type": "integer",
-                    "default": 5,
+                    "maximum": 60,
+                    "default": 10,
                     "minimum": 1
                 }
             }
