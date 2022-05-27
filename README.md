@@ -27,6 +27,8 @@ This extension contributes the following settings:
   - `stroke:` this will render the glyph stroke only (it'll just draw the outline of icon).
   - `fill:` this will render the glyph fill only.
   - `both:` this will render both the glyph fill and stroke.
+- `svg-font-previewer.iconRenderStrokeWidth`: `integer`
+  - The width of the stroke to be drawn based on the render mode.
 
 ## Features
 This extension supports viewing SVG Fonts only.
