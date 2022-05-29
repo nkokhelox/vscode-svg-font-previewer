@@ -1,6 +1,6 @@
 {
-    "preview": true,
-    "version": "2.1.2",
+    "preview": false,
+    "version": "2.1.3",
     "icon": "res/icon.png",
     "publisher": "nkokhelox",
     "name": "svg-font-previewer",
