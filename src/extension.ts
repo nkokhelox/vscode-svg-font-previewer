@@ -327,8 +327,6 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
 
     const html = new XMLSerializer().serializeToString(htmlDocument);
 
-    console.log(html);
-
     return html;
 }
 
