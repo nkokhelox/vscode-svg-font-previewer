@@ -4,7 +4,10 @@
 
 name: Deploy Extension
 uses: lannonbr/vsce-action@3.0.0
-
+on:
+  push:
+    branches: [ master ]
+    
 jobs:
   deploy:
     runs-on: ubuntu-latest
