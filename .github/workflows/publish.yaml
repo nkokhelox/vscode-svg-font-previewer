@@ -13,6 +13,6 @@ jobs:
       - run: npm run compile
       - uses: lannonbr/vsce-action@3.0.0
         with:
-          args: "publish -p $VSCODE_MARKET_PLACE_ACCESS_TOKEN"
+          args: "publish -p $VSCE_TOKEN"
         env:
           VSCE_TOKEN: ${{ secrets.VSCODE_MARKET_PLACE_ACCESS_TOKEN }}
