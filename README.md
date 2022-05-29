@@ -23,8 +23,8 @@ This extension contributes the following settings:
   - `true:` **(default)** also open the SVG preview when opening the SVG file.
     - _This was done so that people can preview SVG automatically just by installing this extension. Then they'll learn to turn it off them selves if they want to_
   - `false:` don't automatically open the SVG preview when opening the SVG file.
-- `svg-font-previewer.iconRender`: `enum[default, stroke, fill]`
-  - `default:` this will render the glyphs fill and switch to glyph stroke only if the glyph has fill=none property.
+- `svg-font-previewer.iconRender`: `enum[mixed, stroke, fill, both]`
+  - `mixed:` this will render the glyphs fill and switch to glyph stroke only if the glyph has fill=none property.
   - `stroke:` this will render the glyph stroke only (it'll just draw the outline of icon).
   - `fill:` this will render the glyph fill only.
   - `both:` this will render both the glyph fill and stroke.
