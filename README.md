@@ -3,6 +3,7 @@
 [![Node.js CI](https://github.com/nkokhelox/vscode-svg-font-previewer/actions/workflows/node.js.yml/badge.svg?branch=master)](https://github.com/nkokhelox/vscode-svg-font-previewer/actions/workflows/node.js.yml)
 
 SVG Font Previewer is built for viewing *SVG Font* files only.
+This will render all of the glyphs in the font file and also show their names.
 
 ## Requirements
 - This depends on [xmldom npm library](https://www.npmjs.com/package/xmldom)

@@ -186,6 +186,10 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
                         <li><b>1em:</b> ${unitsPerEm}</li>
                         <li><b>ascent:</b> ${ascent}</li>
                         <li><b>descent:</b> ${descent}</li>
+                    <ul>
+                        <li><i><b>RenderMode:</b> ${renderMode}</i></li>
+                        <li><i><b>StrokeWidth:</b> ${strokeWidth}</i></li>
+                    </ul>
                     </ul>
                 `);
         htmlBody.appendChild(fontDescriptionElement);
