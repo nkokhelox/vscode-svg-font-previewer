@@ -1,0 +1,12 @@
+name: Release (Major)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/_release-common.yaml
+    with:
+      bump: major
+    secrets: inherit

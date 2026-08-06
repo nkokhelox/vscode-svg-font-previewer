@@ -1,18 +1,29 @@
 name: Publish Extension
 
+# Fallback path only: fires on a hand-pushed version tag (bypassing the
+# release-*.yaml actions), or manual dispatch from master. The normal path
+# is the Release (Patch/Minor/Major) actions, which publish and tag for you.
+
 on:
   push:
-    branches: [ master ]
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch: {}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Allow the normal tag-push path (refs/tags/v*.*.*) plus manual dispatch
+    # from master, but refuse workflow_dispatch off any other branch.
+    if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v2
-      - run: npm install
-      - run: npm run compile
-      - uses: lannonbr/vsce-action@3.0.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          args: "publish -p $VSCE_TOKEN"
+          node-version: 18.x
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run compile
+      - run: npx vsce publish -p "$VSCE_PAT"
         env:
-          VSCE_TOKEN: ${{ secrets.VSCODE_MARKET_PLACE_ACCESS_TOKEN }}
+          VSCE_PAT: ${{ secrets.VSCODE_MARKET_PLACE_ACCESS_TOKEN }}

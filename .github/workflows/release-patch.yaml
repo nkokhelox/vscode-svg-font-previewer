@@ -1,0 +1,12 @@
+name: Release (Patch)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/_release-common.yaml
+    with:
+      bump: patch
+    secrets: inherit

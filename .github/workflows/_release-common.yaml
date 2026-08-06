@@ -1,0 +1,105 @@
+name: _Release Common
+
+# Shared implementation called by release-patch.yaml / release-minor.yaml /
+# release-major.yaml. Not runnable on its own (no workflow_dispatch trigger).
+#
+# Order matters: publish to the Marketplace BEFORE committing/tagging, so a
+# failed publish never leaves a version bump or changelog entry in git that
+# doesn't correspond to a real release.
+
+on:
+  workflow_call:
+    inputs:
+      bump:
+        required: true
+        type: string
+    secrets:
+      VSCODE_MARKET_PLACE_ACCESS_TOKEN:
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    # Same group across all three callers - only one release runs at a time,
+    # and a second trigger waits rather than cancelling one already publishing.
+    concurrency:
+      group: vsce-release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Collect commits since last release tag
+        id: log
+        run: |
+          LAST_TAG=$(git tag -l 'v*.*.*' --sort=-v:refname | head -n1)
+          if [ -n "$LAST_TAG" ]; then
+            RANGE="$LAST_TAG..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+          DELIM="EOF_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+          {
+            echo "entries<<$DELIM"
+            git log $RANGE --no-merges --pretty=format:'- %s (%h)'
+            echo
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Bump version (working copy only - not committed yet)
+        id: bump
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          NEW_VERSION=$(npm version "$BUMP" --no-git-tag-version)
+          echo "version=${NEW_VERSION#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build release
+        run: npm run compile
+
+      - name: Publish to VS Code Marketplace
+        run: npx vsce publish -p "$VSCE_PAT"
+        env:
+          VSCE_PAT: ${{ secrets.VSCODE_MARKET_PLACE_ACCESS_TOKEN }}
+
+      # Everything below only runs once the publish above has actually succeeded.
+      - name: Update changelog
+        env:
+          ENTRIES: ${{ steps.log.outputs.entries }}
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          {
+            printf '\n## [%s] - %s\n' "$VERSION" "$DATE"
+            printf '%s\n' "$ENTRIES"
+          } >> CHANGELOG.md
+
+      - name: Commit and push package.json + CHANGELOG.md to master
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json CHANGELOG.md
+          git commit -m "chore(release): v$VERSION"
+          git push origin HEAD:master
+
+      - name: Tag master
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
