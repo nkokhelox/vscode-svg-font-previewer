@@ -66,6 +66,5 @@ This extension supports viewing SVG Fonts only.
 ## Credits
 
 * [**Artūrs Jansons**](https://jsfiddle.net/user/iegik/fiddles/)
-* [Yoco technologies](https://grnh.se/7723f8371)
 * [Stackoverflow](https://stackoverflow.com/users/story/6941707)
 * [icomoon.io](https://icomoon.io/)
