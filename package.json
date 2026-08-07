@@ -34,7 +34,8 @@
         "Visualization"
     ],
     "activationEvents": [
-        "workspaceContains:**/*.svg",
+        "onLanguage:svg",
+        "onLanguage:xml",
         "onCommand:extension.svgFontPreview"
     ],
     "main": "./out/extension",
