@@ -67,15 +67,10 @@ jobs:
           NEW_VERSION=$(npm version "$BUMP" --no-git-tag-version)
           echo "version=${NEW_VERSION#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Build release
-        run: npm run compile
-
-      - name: Publish to VS Code Marketplace
-        run: npx vsce publish -p "$VSCE_PAT"
-        env:
-          VSCE_PAT: ${{ secrets.VSCODE_MARKET_PLACE_ACCESS_TOKEN }}
-
-      # Everything below only runs once the publish above has actually succeeded.
+      # Changelog is updated in the working copy BEFORE build/publish, so the
+      # .vsix vsce actually ships - and the Changelog tab the Marketplace
+      # renders from it - includes this release's own entry, not just the
+      # previous one.
       - name: Update changelog
         env:
           ENTRIES: ${{ steps.log.outputs.entries }}
@@ -87,6 +82,15 @@ jobs:
             printf '%s\n' "$ENTRIES"
           } >> CHANGELOG.md
 
+      - name: Build release
+        run: npm run compile
+
+      - name: Publish to VS Code Marketplace
+        run: npx vsce publish -p "$VSCE_PAT"
+        env:
+          VSCE_PAT: ${{ secrets.VSCODE_MARKET_PLACE_ACCESS_TOKEN }}
+
+      # Everything below only runs once the publish above has actually succeeded.
       - name: Commit and push package.json + CHANGELOG.md to master
         env:
           VERSION: ${{ steps.bump.outputs.version }}
