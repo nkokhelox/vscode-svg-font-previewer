@@ -154,6 +154,13 @@
                     "maximum": 60,
                     "default": 10,
                     "minimum": 1
+                },
+                "svg-font-previewer.showGlyphsInGutter": {
+                    "order": 5,
+                    "description": "Render each glyph inline in the text editor's gutter, next to its <glyph> line",
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         }
