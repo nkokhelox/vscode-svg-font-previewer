@@ -266,10 +266,13 @@ function updateGutterGlyphs(document: vscode.TextDocument) {
             }
 
             const horizontalUnits = glyphIcon.getAttribute('horiz-adv-x') || unitsPerEm;
+            const glyphFill = glyphIcon.getAttribute('fill');
+            // Rendered as a `before` attachment (between the line number and the text)
+            // at half a line's height, honouring iconRenderMode and the glyph's own fill.
+            const iconSize = '0.75em';
             const decoration = vscode.window.createTextEditorDecorationType({
-                gutterIconSize: 'contain',
-                light: { gutterIconPath: gutterIconUri(svgPathData, horizontalUnits, unitsPerEm, '#424242') },
-                dark: { gutterIconPath: gutterIconUri(svgPathData, horizontalUnits, unitsPerEm, '#C5C5C5') },
+                light: { before: { contentIconPath: gutterIconUri(svgPathData, glyphFill, horizontalUnits, unitsPerEm, '#424242'), width: iconSize, height: iconSize, margin: '0 0.4em 0 0' } },
+                dark: { before: { contentIconPath: gutterIconUri(svgPathData, glyphFill, horizontalUnits, unitsPerEm, '#C5C5C5'), width: iconSize, height: iconSize, margin: '0 0.4em 0 0' } },
             });
 
             const lineRange = document.lineAt(glyphLine - 1).range;
@@ -283,9 +286,31 @@ function updateGutterGlyphs(document: vscode.TextDocument) {
     }
 }
 
-function gutterIconUri(svgPathData: string, horizontalUnits: string, unitsPerEm: string, color: string): vscode.Uri {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${horizontalUnits} ${unitsPerEm}">` +
-        `<path transform="translate(0,${unitsPerEm}) scale(1, -1)" fill="${color}" d="${svgPathData.replace(/"/g, '&quot;')}"/>` +
+function gutterIconUri(svgPathData: string, glyphFill: string | null, horizontalUnits: string, unitsPerEm: string, themeColor: string): vscode.Uri {
+    // Same renderMode semantics as the preview pane, with the theme color standing
+    // in for currentColor; a glyph's own paintable fill wins where fill applies.
+    let paintAttributes: string;
+    switch (renderMode) {
+        case Render.STROKE:
+            paintAttributes = `stroke="${themeColor}" stroke-width="${strokeWidth}" fill="none"`;
+            break;
+        case Render.FILL:
+            paintAttributes = `fill="${glyphFill && glyphFill !== 'none' ? glyphFill : themeColor}"`;
+            break;
+        case Render.MIXED:
+            if (glyphFill === 'none') {
+                paintAttributes = `stroke="${themeColor}" stroke-width="${strokeWidth}" fill="none"`;
+            } else {
+                paintAttributes = `fill="${glyphFill || themeColor}"`;
+            }
+            break;
+        default: // Render.BOTH
+            paintAttributes = `fill="#fc8d8d" stroke="black" stroke-width="${strokeWidth}"`;
+            break;
+    }
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-${strokeWidth} -${strokeWidth} ${strokeWidth + (+horizontalUnits) * 1.2} ${strokeWidth + (+unitsPerEm) * 1.2}">` +
+        `<path transform="translate(0,${unitsPerEm}) scale(1, -1)" ${paintAttributes} d="${svgPathData.replace(/"/g, '&quot;')}"/>` +
         `</svg>`;
     return vscode.Uri.parse(`data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`);
 }
