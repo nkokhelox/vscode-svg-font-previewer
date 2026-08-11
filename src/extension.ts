@@ -312,7 +312,10 @@ function gutterIconUri(svgPathData: string, glyphFill: string | null, horizontal
             break;
     }
 
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-${gutterStrokeWidth} -${gutterStrokeWidth} ${gutterStrokeWidth + (+horizontalUnits) * 1.2} ${gutterStrokeWidth + (+unitsPerEm) * 1.2}">` +
+    // Explicit intrinsic size: without width/height the svg image renders at its
+    // natural size and overflows the line instead of staying within one line.
+    const iconPixels = 11;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${iconPixels}" height="${iconPixels}" viewBox="-${gutterStrokeWidth} -${gutterStrokeWidth} ${gutterStrokeWidth + (+horizontalUnits) * 1.2} ${gutterStrokeWidth + (+unitsPerEm) * 1.2}">` +
         `<path transform="translate(0,${unitsPerEm}) scale(1, -1)" ${paintAttributes} d="${svgPathData.replace(/"/g, '&quot;')}"/>` +
         `</svg>`;
     return vscode.Uri.parse(`data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`);
