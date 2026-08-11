@@ -57,13 +57,17 @@ let renderMode: string = Render.MIXED;
 let sortByField: string = TagSortBy.NONE;
 let sortByOrder: string = TagSortOrder.ASC;
 let autoOpenPreview: boolean = true;
+let gutterPreviewEnabled: boolean = true;
 
 const webviewPanels = new Map<string, vscode.WebviewPanel>();
 const panelDocuments = new Map<string, vscode.Uri>();
 const panelGlyphLines = new Map<string, number[]>();
+const gutterDecorations = new Map<string, vscode.TextEditorDecorationType[]>();
 
 export function deactivate() {
     webviewPanels.forEach(panel => panel.dispose());
+    gutterDecorations.forEach(decorations => decorations.forEach(decoration => decoration.dispose()));
+    gutterDecorations.clear();
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -88,6 +92,7 @@ export function activate(context: vscode.ExtensionContext) {
                 if (webviewPanels.size > 0) {
                     vscode.window.showInformationMessage(`Configuration updated, reopen your font ${webviewPanels.size === 1 ? 'preview' : 'previews'}`);
                 }
+                vscode.window.visibleTextEditors.forEach(editor => updateGutterGlyphs(editor.document));
             }
         }
     );
@@ -97,8 +102,25 @@ export function activate(context: vscode.ExtensionContext) {
             if (autoOpenPreview) {
                 activatePreviewPanel(context, document, true, true);
             }
+            updateGutterGlyphs(document);
         }
     );
+
+    // Glyphs rendered inline on the editor gutter
+    // (https://github.com/nkokhelox/vscode-svg-font-previewer/issues/26)
+    vscode.window.onDidChangeVisibleTextEditors(
+        (editors: readonly vscode.TextEditor[]) => editors.forEach(editor => updateGutterGlyphs(editor.document))
+    );
+
+    vscode.workspace.onDidSaveTextDocument(
+        (document: vscode.TextDocument) => updateGutterGlyphs(document)
+    );
+
+    vscode.workspace.onDidCloseTextDocument(
+        (document: vscode.TextDocument) => disposeGutterDecorations(document.uri.toString())
+    );
+
+    vscode.window.visibleTextEditors.forEach(editor => updateGutterGlyphs(editor.document));
 
     // Editor -> preview: highlight the glyph whose definition the cursor is on
     // (https://github.com/nkokhelox/vscode-svg-font-previewer/issues/27)
@@ -199,6 +221,73 @@ function getWebViewPanel(
 
         return newPanel;
     }
+}
+
+function disposeGutterDecorations(documentKey: string) {
+    const decorations = gutterDecorations.get(documentKey);
+    if (decorations) {
+        decorations.forEach(decoration => decoration.dispose());
+        gutterDecorations.delete(documentKey);
+    }
+}
+
+function updateGutterGlyphs(document: vscode.TextDocument) {
+    const documentKey = document.uri.toString();
+    disposeGutterDecorations(documentKey);
+
+    if (!gutterPreviewEnabled || !isSvg(document)) {
+        return;
+    }
+
+    const editors = vscode.window.visibleTextEditors.filter(editor => editor.document.uri.toString() === documentKey);
+    if (editors.length === 0) {
+        return;
+    }
+
+    const xmlFontContent = new DOMParser().parseFromString(document.getText(), `text/xml`);
+    const fontNodes = xmlFontContent.getElementsByTagName('font');
+    if (!fontNodes || fontNodes.length <= 0) {
+        return;
+    }
+
+    const decorations: vscode.TextEditorDecorationType[] = [];
+    for (let fontIndex = 0; fontIndex < fontNodes.length; fontIndex++) {
+        const fontNode = fontNodes[fontIndex];
+        const fontFace = fontNode.getElementsByTagName('font-face')[0];
+        const unitsPerEm = (fontFace && fontFace.getAttribute('units-per-em')) || "1";
+
+        const glyphList = fontNode.getElementsByTagName('glyph');
+        for (let glyphIndex = 0; glyphIndex < glyphList.length; glyphIndex++) {
+            const glyphIcon = glyphList[glyphIndex];
+            const svgPathData = glyphIcon && glyphIcon.getAttribute('d');
+            const glyphLine = (glyphIcon && glyphIcon.lineNumber) || 0;
+            if (!svgPathData || glyphLine <= 0 || glyphLine > document.lineCount) {
+                continue;
+            }
+
+            const horizontalUnits = glyphIcon.getAttribute('horiz-adv-x') || unitsPerEm;
+            const decoration = vscode.window.createTextEditorDecorationType({
+                gutterIconSize: 'contain',
+                light: { gutterIconPath: gutterIconUri(svgPathData, horizontalUnits, unitsPerEm, '#424242') },
+                dark: { gutterIconPath: gutterIconUri(svgPathData, horizontalUnits, unitsPerEm, '#C5C5C5') },
+            });
+
+            const lineRange = document.lineAt(glyphLine - 1).range;
+            editors.forEach(editor => editor.setDecorations(decoration, [lineRange]));
+            decorations.push(decoration);
+        }
+    }
+
+    if (decorations.length > 0) {
+        gutterDecorations.set(documentKey, decorations);
+    }
+}
+
+function gutterIconUri(svgPathData: string, horizontalUnits: string, unitsPerEm: string, color: string): vscode.Uri {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${horizontalUnits} ${unitsPerEm}">` +
+        `<path transform="translate(0,${unitsPerEm}) scale(1, -1)" fill="${color}" d="${svgPathData.replace(/"/g, '&quot;')}"/>` +
+        `</svg>`;
+    return vscode.Uri.parse(`data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`);
 }
 
 function revealDocumentLine(fileName: string, line: number) {
@@ -497,6 +586,7 @@ function loadConfig() {
     let config = vscode.workspace.getConfiguration('svg-font-previewer');
 
     autoOpenPreview = config.get<boolean>("autoOpenPreview", false);
+    gutterPreviewEnabled = config.get<boolean>("gutterGlyphPreview", true);
     renderMode = Render.map.get(config.get<string>("iconRenderMode", Render.MIXED)) || Render.MIXED;
     strokeWidth = (config.get<number>("iconRenderStrokeWidth", 1));
     sortByField = TagSortBy.map.get(config.get<string>("iconSortBy", TagSortBy.NONE)) || TagSortBy.NONE;

@@ -95,6 +95,13 @@
                     "type": "boolean",
                     "default": true
                 },
+                "svg-font-previewer.gutterGlyphPreview": {
+                    "order": 5,
+                    "description": "Render each glyph as an inline preview icon on the editor gutter",
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": true
+                },
                 "svg-font-previewer.iconSortBy": {
                     "order": 1,
                     "description": "Sort the icons by name or by unicode (displayed as hex character) or don't sort at all",
