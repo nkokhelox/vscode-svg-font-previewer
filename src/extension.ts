@@ -289,27 +289,30 @@ function updateGutterGlyphs(document: vscode.TextDocument) {
 function gutterIconUri(svgPathData: string, glyphFill: string | null, horizontalUnits: string, unitsPerEm: string, themeColor: string): vscode.Uri {
     // Same renderMode semantics as the preview pane, with the theme color standing
     // in for currentColor; a glyph's own paintable fill wins where fill applies.
+    // The configured stroke width is in glyph units and rendered at ~0.75em it
+    // becomes a sub-pixel hairline, so scale it to stay ~1px at gutter size.
+    const gutterStrokeWidth = Math.max(strokeWidth, Math.round((+unitsPerEm) / 8));
     let paintAttributes: string;
     switch (renderMode) {
         case Render.STROKE:
-            paintAttributes = `stroke="${themeColor}" stroke-width="${strokeWidth}" fill="none"`;
+            paintAttributes = `stroke="${themeColor}" stroke-width="${gutterStrokeWidth}" fill="none"`;
             break;
         case Render.FILL:
             paintAttributes = `fill="${glyphFill && glyphFill !== 'none' ? glyphFill : themeColor}"`;
             break;
         case Render.MIXED:
             if (glyphFill === 'none') {
-                paintAttributes = `stroke="${themeColor}" stroke-width="${strokeWidth}" fill="none"`;
+                paintAttributes = `stroke="${themeColor}" stroke-width="${gutterStrokeWidth}" fill="none"`;
             } else {
                 paintAttributes = `fill="${glyphFill || themeColor}"`;
             }
             break;
         default: // Render.BOTH
-            paintAttributes = `fill="#fc8d8d" stroke="black" stroke-width="${strokeWidth}"`;
+            paintAttributes = `fill="#fc8d8d" stroke="black" stroke-width="${gutterStrokeWidth}"`;
             break;
     }
 
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-${strokeWidth} -${strokeWidth} ${strokeWidth + (+horizontalUnits) * 1.2} ${strokeWidth + (+unitsPerEm) * 1.2}">` +
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-${gutterStrokeWidth} -${gutterStrokeWidth} ${gutterStrokeWidth + (+horizontalUnits) * 1.2} ${gutterStrokeWidth + (+unitsPerEm) * 1.2}">` +
         `<path transform="translate(0,${unitsPerEm}) scale(1, -1)" ${paintAttributes} d="${svgPathData.replace(/"/g, '&quot;')}"/>` +
         `</svg>`;
     return vscode.Uri.parse(`data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`);
