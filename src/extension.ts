@@ -134,7 +134,7 @@ function getWebViewPanel(
     fileName: string,
     context: vscode.ExtensionContext,
     makeNewPanel: boolean = true,
-    panelOptions: object = { preserveFocus: true }
+    panelOptions: object = { preserveFocus: true, enableScripts: true }
 ): vscode.WebviewPanel | undefined {
     const maybeExistingPanel = webviewPanels.get(fileName);
 
@@ -158,6 +158,30 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
     // Setup the html to show in the preview
     const htmlDocument = parser.parseFromString('<!doctype html>', `text/html`);
     const htmlBody = htmlDocument.createElement(`body`);
+
+    // Search/filter bar (https://github.com/nkokhelox/vscode-svg-font-previewer/issues/28)
+    const searchInput = htmlDocument.createElement(`input`);
+    searchInput.setAttribute('id', 'glyph-search');
+    searchInput.setAttribute('type', 'search');
+    searchInput.setAttribute('list', 'glyph-search-suggestions');
+    searchInput.setAttribute('placeholder', 'Search glyphs by name or unicode');
+    searchInput.setAttribute('oninput', 'filterGlyphs()');
+    searchInput.setAttribute('style', 'width:100%; box-sizing:border-box; padding:.4em .6em; font-size:15px; color:var(--vscode-input-foreground, inherit); background:var(--vscode-input-background, inherit); border:1px solid var(--vscode-input-border, currentColor);');
+
+    const searchSuggestions = htmlDocument.createElement(`datalist`);
+    searchSuggestions.setAttribute('id', 'glyph-search-suggestions');
+
+    const searchMessage = htmlDocument.createElement(`p`);
+    searchMessage.setAttribute('id', 'glyph-search-message');
+    searchMessage.setAttribute('style', 'display:none; font-style:italic;');
+
+    const searchBar = htmlDocument.createElement(`div`);
+    searchBar.setAttribute('id', 'glyph-search-bar');
+    searchBar.setAttribute('style', 'position:sticky; top:0; z-index:1; padding:.5em 0; background:var(--vscode-editor-background, inherit);');
+    searchBar.appendChild(searchInput);
+    searchBar.appendChild(searchSuggestions);
+    searchBar.appendChild(searchMessage);
+    htmlBody.appendChild(searchBar);
 
     // Parsing the font icons and building the preview html
     const fontNodes = xmlFontContent.getElementsByTagName('font');
@@ -285,9 +309,16 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
                         svgContent.setAttribute('style', 'background-color:#ffffff;');
                     }
                     svgContent.setAttribute('id', iconName);
+                    svgContent.setAttribute('class', 'glyph-item');
+                    svgContent.setAttribute('data-name', iconName.toLowerCase());
+                    svgContent.setAttribute('data-unicode', hexChar.toLowerCase());
                     svgContent.appendChild(glyphUnicode);
                     svgContent.appendChild(glyphDiv);
                     svgContent.appendChild(glyphName);
+
+                    const nameSuggestion = htmlDocument.createElement(`option`);
+                    nameSuggestion.setAttribute('value', iconName);
+                    searchSuggestions.appendChild(nameSuggestion);
 
                     fontIcons.push(new SortableTag(iconName, hexChar, svgContent));
                 }
@@ -298,6 +329,32 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
         fontIcons = sortByField === TagSortBy.NONE ? fontIcons : fontIcons.sort((a, b) => a.get(sortByField) < b.get(sortByField) ? -1 * sortOrderFactor : 1 * sortOrderFactor);
         fontIcons.forEach(x => htmlBody.appendChild(x.element));
     }
+
+    // NOTE: keep this script free of '<', '>' and '&' characters - the XMLSerializer
+    // escapes them in text nodes, which would corrupt the script in the webview.
+    const filterScript = htmlDocument.createElement(`script`);
+    filterScript.appendChild(htmlDocument.createTextNode(`
+        function filterGlyphs() {
+            var query = document.getElementById('glyph-search').value.trim().toLowerCase();
+            var message = document.getElementById('glyph-search-message');
+            var glyphs = document.getElementsByClassName('glyph-item');
+            var visibleCount = 0;
+            Array.prototype.forEach.call(glyphs, function (glyph) {
+                var name = glyph.getAttribute('data-name') || '';
+                var unicode = glyph.getAttribute('data-unicode') || '';
+                var isMatch = query === '' || name.indexOf(query) === 0 || unicode.indexOf(query) === 0;
+                glyph.style.display = isMatch ? '' : 'none';
+                if (isMatch) { visibleCount += 1; }
+            });
+            if (visibleCount === 0) {
+                message.textContent = 'No glyph with "' + query + '" found.';
+                message.style.display = 'block';
+            } else {
+                message.style.display = 'none';
+            }
+        }
+    `));
+    htmlBody.appendChild(filterScript);
 
     const htmlContent = htmlDocument.createElement(`html`);
     htmlContent.appendChild(parser.parseFromString(
