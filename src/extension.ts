@@ -59,6 +59,8 @@ let sortByOrder: string = TagSortOrder.ASC;
 let autoOpenPreview: boolean = true;
 
 const webviewPanels = new Map<string, vscode.WebviewPanel>();
+const panelDocuments = new Map<string, vscode.Uri>();
+const panelGlyphLines = new Map<string, number[]>();
 
 export function deactivate() {
     webviewPanels.forEach(panel => panel.dispose());
@@ -97,6 +99,29 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
     );
+
+    // Editor -> preview: highlight the glyph whose definition the cursor is on
+    // (https://github.com/nkokhelox/vscode-svg-font-previewer/issues/27)
+    vscode.window.onDidChangeTextEditorSelection(
+        (event: vscode.TextEditorSelectionChangeEvent) => {
+            const fileName = getFileName(event.textEditor.document);
+            const panel = webviewPanels.get(fileName);
+            const glyphLines = panelGlyphLines.get(fileName);
+            if (panel && glyphLines && glyphLines.length > 0) {
+                const cursorLine = event.selections[0].active.line + 1; // editor lines are 0-based, xmldom's are 1-based
+                let glyphLine = 0;
+                for (const line of glyphLines) {
+                    if (line > cursorLine) {
+                        break;
+                    }
+                    glyphLine = line;
+                }
+                if (glyphLine > 0) {
+                    panel.webview.postMessage({ command: 'highlightGlyph', line: glyphLine });
+                }
+            }
+        }
+    );
 }
 
 function activatePreviewPanel(context: vscode.ExtensionContext, document: vscode.TextDocument, isAutoActivation: boolean, refreshContent: boolean = false) {
@@ -113,10 +138,12 @@ function activatePreviewPanel(context: vscode.ExtensionContext, document: vscode
         } else { // Font svg
             const panel = getWebViewPanel(fileName, context);
             if (panel) {
+                panelDocuments.set(fileName, document.uri);
                 if (refreshContent || panel.webview.html === undefined || panel.webview.html === null) {
-                    const htmlContentString = previewSvgFont(parser, xmlFontContent)
-                    if (htmlContentString) {
-                        panel.webview.html = htmlContentString;
+                    const preview = previewSvgFont(parser, xmlFontContent)
+                    if (preview) {
+                        panel.webview.html = preview.html;
+                        panelGlyphLines.set(fileName, preview.glyphLines);
                     } else {
                         vscode.window.showInformationMessage(`'${fileName}' is not the SVG file`);
                     }
@@ -147,17 +174,52 @@ function getWebViewPanel(
         const toggleViewColumn = editorView && editorView.viewColumn ? editorView.viewColumn % 3 + 1 : vscode.ViewColumn.Two;
         const newPanel = vscode.window.createWebviewPanel('svgFontPreview', fileName, toggleViewColumn, panelOptions);
 
-        newPanel.onDidDispose(() => webviewPanels.delete(fileName), null, context.subscriptions);
+        // Preview -> editor: clicking a glyph reveals its definition line
+        // (https://github.com/nkokhelox/vscode-svg-font-previewer/issues/27)
+        newPanel.webview.onDidReceiveMessage(
+            (message: any) => {
+                if (message && message.command === 'revealGlyph' && typeof message.line === 'number') {
+                    revealDocumentLine(fileName, message.line);
+                }
+            },
+            null,
+            context.subscriptions
+        );
+
+        newPanel.onDidDispose(
+            () => {
+                webviewPanels.delete(fileName);
+                panelDocuments.delete(fileName);
+                panelGlyphLines.delete(fileName);
+            },
+            null,
+            context.subscriptions
+        );
         webviewPanels.set(fileName, newPanel);
 
         return newPanel;
     }
 }
 
-function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string | undefined {
+function revealDocumentLine(fileName: string, line: number) {
+    const documentUri = panelDocuments.get(fileName);
+    if (!documentUri) {
+        return;
+    }
+    const existingEditor = vscode.window.visibleTextEditors.find(editor => editor.document.uri.toString() === documentUri.toString());
+    const viewColumn = existingEditor ? existingEditor.viewColumn : vscode.ViewColumn.One;
+    vscode.window.showTextDocument(documentUri, { viewColumn: viewColumn, preserveFocus: true }).then(editor => {
+        const lineRange = editor.document.lineAt(Math.min(line, editor.document.lineCount) - 1).range;
+        editor.selection = new vscode.Selection(lineRange.start, lineRange.end);
+        editor.revealRange(lineRange, vscode.TextEditorRevealType.InCenter);
+    });
+}
+
+function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): { html: string, glyphLines: number[] } | undefined {
     // Setup the html to show in the preview
     const htmlDocument = parser.parseFromString('<!doctype html>', `text/html`);
     const htmlBody = htmlDocument.createElement(`body`);
+    const glyphLines: number[] = [];
 
     // Search/filter bar (https://github.com/nkokhelox/vscode-svg-font-previewer/issues/28)
     const searchInput = htmlDocument.createElement(`input`);
@@ -312,6 +374,12 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
                     svgContent.setAttribute('class', 'glyph-item');
                     svgContent.setAttribute('data-name', iconName.toLowerCase());
                     svgContent.setAttribute('data-unicode', hexChar.toLowerCase());
+
+                    const glyphLine = glyphIcon.lineNumber || 0; // 1-based source line, provided by xmldom's locator
+                    if (glyphLine > 0) {
+                        svgContent.setAttribute('data-line', `${glyphLine}`);
+                        glyphLines.push(glyphLine);
+                    }
                     svgContent.appendChild(glyphUnicode);
                     svgContent.appendChild(glyphDiv);
                     svgContent.appendChild(glyphName);
@@ -353,6 +421,39 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
                 message.style.display = 'none';
             }
         }
+
+        var vscodeApi = typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
+
+        function highlightGlyph(glyph, scrollToGlyph) {
+            Array.prototype.forEach.call(document.querySelectorAll('.glyph-highlight'), function (highlighted) {
+                highlighted.classList.remove('glyph-highlight');
+            });
+            if (glyph) {
+                glyph.classList.add('glyph-highlight');
+                if (scrollToGlyph) {
+                    glyph.scrollIntoView({ block: 'center' });
+                }
+            }
+        }
+
+        Array.prototype.forEach.call(document.getElementsByClassName('glyph-item'), function (glyph) {
+            glyph.addEventListener('click', function () {
+                highlightGlyph(glyph, false);
+                var line = Number(glyph.getAttribute('data-line'));
+                if (vscodeApi) {
+                    if (line) {
+                        vscodeApi.postMessage({ command: 'revealGlyph', line: line });
+                    }
+                }
+            });
+        });
+
+        window.addEventListener('message', function (event) {
+            var message = event.data || {};
+            if (message.command === 'highlightGlyph') {
+                highlightGlyph(document.querySelector('.glyph-item[data-line="' + message.line + '"]'), true);
+            }
+        });
     `));
     htmlBody.appendChild(filterScript);
 
@@ -374,6 +475,11 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
                 dl:hover {
                     outline: currentcolor solid 1px;
                     filter: invert(0);
+                    cursor: pointer;
+                }
+                dl.glyph-highlight {
+                    outline: var(--vscode-focusBorder, currentcolor) solid 2px;
+                    filter: invert(0);
                 }
             </style>
         </head>`
@@ -384,7 +490,7 @@ function previewSvgFont(parser: typeof DOMParser, xmlFontContent: any): string |
 
     const html = new XMLSerializer().serializeToString(htmlDocument);
 
-    return html;
+    return { html: html, glyphLines: glyphLines.sort((a, b) => a - b) };
 }
 
 function loadConfig() {
